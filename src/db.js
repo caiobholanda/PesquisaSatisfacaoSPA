@@ -53,6 +53,22 @@ export function initDb() {
     CREATE INDEX IF NOT EXISTS idx_feedback_origem ON feedback(origem);
     CREATE INDEX IF NOT EXISTS idx_feedback_tipo_cliente ON feedback(tipo_cliente);
 
+    CREATE TABLE IF NOT EXISTS massagistas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      ativo INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS tipos_massagem (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      duracao_min INTEGER,
+      preco REAL,
+      ativo INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS admin_users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -176,6 +192,34 @@ export function statsFeedback({ from, to } = {}) {
   };
 
   return { total, periodo: { from: dfrom, to: dto }, porOrigem, porTipo, recomenda, medias, mediaGeral, pctRecomenda, distribuicoes, textos };
+}
+
+// ── Massagistas ──
+export function listarMassagistas() {
+  return getDb().prepare('SELECT * FROM massagistas ORDER BY nome ASC').all();
+}
+export function inserirMassagista(nome) {
+  return getDb().prepare('INSERT INTO massagistas (nome) VALUES (?)').run(nome.trim()).lastInsertRowid;
+}
+export function atualizarMassagista(id, nome, ativo) {
+  return getDb().prepare('UPDATE massagistas SET nome=?, ativo=? WHERE id=?').run(nome.trim(), ativo, id).changes;
+}
+export function deletarMassagista(id) {
+  return getDb().prepare('DELETE FROM massagistas WHERE id=?').run(id).changes;
+}
+
+// ── Tipos de Massagem ──
+export function listarTiposMassagem() {
+  return getDb().prepare('SELECT * FROM tipos_massagem ORDER BY nome ASC').all();
+}
+export function inserirTipoMassagem(nome, duracao_min, preco) {
+  return getDb().prepare('INSERT INTO tipos_massagem (nome, duracao_min, preco) VALUES (?, ?, ?)').run(nome.trim(), duracao_min || null, preco || null).lastInsertRowid;
+}
+export function atualizarTipoMassagem(id, nome, duracao_min, preco, ativo) {
+  return getDb().prepare('UPDATE tipos_massagem SET nome=?, duracao_min=?, preco=?, ativo=? WHERE id=?').run(nome.trim(), duracao_min || null, preco || null, ativo, id).changes;
+}
+export function deletarTipoMassagem(id) {
+  return getDb().prepare('DELETE FROM tipos_massagem WHERE id=?').run(id).changes;
 }
 
 export function buscarAdmin(username) {

@@ -123,6 +123,27 @@
     .spinner{width:12px;height:12px;border:1.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
     @keyframes spin{to{transform:rotate(360deg)}}
 
+    /* ── Modais de Cadastro ── */
+    .mgmt-overlay{position:fixed;inset:0;background:rgba(26,26,26,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(3px)}
+    .mgmt-overlay.open{display:flex}
+    .mgmt-modal{background:var(--surface);border:1px solid var(--border);width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column}
+    .mgmt-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
+    .mgmt-header-left{display:flex;align-items:baseline;gap:.6rem}
+    .mgmt-num{font-family:var(--mono);font-size:.72rem;color:var(--gold);letter-spacing:.1em}
+    .mgmt-title{font-family:var(--serif);font-size:1.3rem;font-weight:400;letter-spacing:.06em;color:var(--text)}
+    .mgmt-body{overflow-y:auto;flex:1;padding:1.25rem 1.5rem}
+    .mgmt-form{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+    .mgmt-form input{flex:1;min-width:140px}
+    .mgmt-form .field-small{width:100px;flex:none}
+    .mgmt-list{display:flex;flex-direction:column;gap:1px;background:var(--border)}
+    .mgmt-item{background:var(--surface);display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem}
+    .mgmt-item:hover{background:var(--surface2)}
+    .mgmt-item-nome{flex:1;font-size:.9rem;color:var(--text)}
+    .mgmt-item-meta{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
+    .mgmt-item-inativo .mgmt-item-nome{color:var(--muted);text-decoration:line-through}
+    .mgmt-empty{padding:2.5rem;text-align:center;color:var(--muted);font-family:var(--serif);font-size:1.1rem;font-style:italic}
+    .mgmt-err{font-size:.78rem;color:var(--danger);margin-top:.4rem;min-height:1.1em}
+
     /* ── Análise ── */
     .analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px}
     @media(max-width:900px){.analysis-grid{grid-template-columns:1fr}}
@@ -188,7 +209,11 @@
       <span class="sep"></span>
       <small>Pesquisa de Satisfação</small>
     </div>
-    <button class="btn btn-outline btn-sm" id="btn-sair">Sair</button>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <button class="btn btn-outline btn-sm" id="btn-open-massagistas">Massagistas</button>
+      <button class="btn btn-outline btn-sm" id="btn-open-tipos">Tipos de Massagem</button>
+      <button class="btn btn-outline btn-sm" id="btn-sair">Sair</button>
+    </div>
   </header>
   <main>
     <div class="kpi-grid" id="kpi-grid">
@@ -280,6 +305,44 @@
     <button class="drawer-close" id="btn-close-drawer">✕</button>
   </div>
   <div id="drawer-content"></div>
+</div>
+
+<!-- MODAL MASSAGISTAS -->
+<div class="mgmt-overlay" id="overlay-massagistas">
+  <div class="mgmt-modal">
+    <div class="mgmt-header">
+      <div class="mgmt-header-left"><span class="mgmt-num">01</span><h2 class="mgmt-title">Massagistas</h2></div>
+      <button class="drawer-close" id="close-massagistas">✕</button>
+    </div>
+    <div class="mgmt-body">
+      <div class="mgmt-form">
+        <input type="text" id="inp-m-nome" placeholder="Nome da massagista" style="flex:1">
+        <button class="btn btn-gold" id="btn-add-massagista">Adicionar</button>
+        <div class="mgmt-err" id="err-massagista" style="width:100%"></div>
+      </div>
+      <div id="list-massagistas"><div class="mgmt-empty">Nenhuma massagista cadastrada.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TIPOS DE MASSAGEM -->
+<div class="mgmt-overlay" id="overlay-tipos">
+  <div class="mgmt-modal">
+    <div class="mgmt-header">
+      <div class="mgmt-header-left"><span class="mgmt-num">02</span><h2 class="mgmt-title">Tipos de Massagem</h2></div>
+      <button class="drawer-close" id="close-tipos">✕</button>
+    </div>
+    <div class="mgmt-body">
+      <div class="mgmt-form">
+        <input type="text" id="inp-t-nome" placeholder="Nome do tipo" style="flex:1;min-width:140px">
+        <input type="number" id="inp-t-duracao" placeholder="Min" class="field-small" min="1">
+        <input type="number" id="inp-t-preco" placeholder="R$" class="field-small" min="0" step="0.01">
+        <button class="btn btn-gold" id="btn-add-tipo">Adicionar</button>
+        <div class="mgmt-err" id="err-tipo" style="width:100%"></div>
+      </div>
+      <div id="list-tipos"><div class="mgmt-empty">Nenhum tipo cadastrado.</div></div>
+    </div>
+  </div>
 </div>
 
 <script src="/js/admin.js"></script>

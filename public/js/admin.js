@@ -283,3 +283,115 @@ function loadAll() { loadStats(); loadTable(); }
   document.getElementById('f-to').value = hoje.toISOString().slice(0,10);
   document.getElementById('f-from').value = d30.toISOString().slice(0,10);
 })();
+
+// ── Modais de Cadastro ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.getElementById('btn-open-massagistas').addEventListener('click', () => { openModal('overlay-massagistas'); loadMassagistas(); });
+document.getElementById('close-massagistas').addEventListener('click', () => closeModal('overlay-massagistas'));
+document.getElementById('overlay-massagistas').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('overlay-massagistas'); });
+
+document.getElementById('btn-open-tipos').addEventListener('click', () => { openModal('overlay-tipos'); loadTipos(); });
+document.getElementById('close-tipos').addEventListener('click', () => closeModal('overlay-tipos'));
+document.getElementById('overlay-tipos').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('overlay-tipos'); });
+
+// ── Massagistas ──
+async function loadMassagistas() {
+  const res = await api('/api/massagistas');
+  if (!res) return;
+  const d = await res.json();
+  const el = document.getElementById('list-massagistas');
+  if (!d.items.length) { el.innerHTML = '<div class="mgmt-empty">Nenhuma massagista cadastrada.</div>'; return; }
+  el.innerHTML = '<div class="mgmt-list">' + d.items.map(m => `
+    <div class="mgmt-item ${m.ativo ? '' : 'mgmt-item-inativo'}">
+      <span class="mgmt-item-nome">${m.nome}</span>
+      ${m.ativo ? '' : '<span class="mgmt-item-meta">inativa</span>'}
+      <button class="btn btn-outline btn-sm" onclick="editMassagista(${m.id},'${m.nome.replace(/'/g,"\\'")}',${m.ativo})"
+        style="padding:.2rem .55rem;font-size:.65rem">Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="delMassagista(${m.id})"
+        style="padding:.2rem .55rem;font-size:.65rem">✕</button>
+    </div>`).join('') + '</div>';
+}
+
+document.getElementById('btn-add-massagista').addEventListener('click', async () => {
+  const nome = document.getElementById('inp-m-nome').value.trim();
+  const err = document.getElementById('err-massagista');
+  err.textContent = '';
+  if (!nome) { err.textContent = 'Informe o nome.'; return; }
+  const res = await api('/api/massagistas', { method: 'POST', body: JSON.stringify({ nome }) });
+  if (!res) return;
+  const d = await res.json();
+  if (!d.ok) { err.textContent = d.error; return; }
+  document.getElementById('inp-m-nome').value = '';
+  loadMassagistas();
+});
+
+window.editMassagista = async (id, nomeAtual, ativoAtual) => {
+  const nome = prompt('Nome:', nomeAtual);
+  if (nome === null) return;
+  const ativo = confirm('Massagista ativa?') ? 1 : 0;
+  const res = await api(`/api/massagistas/${id}`, { method: 'PUT', body: JSON.stringify({ nome, ativo }) });
+  if (res) loadMassagistas();
+};
+
+window.delMassagista = async (id) => {
+  if (!confirm('Excluir esta massagista?')) return;
+  const res = await api(`/api/massagistas/${id}`, { method: 'DELETE' });
+  if (res) loadMassagistas();
+};
+
+// ── Tipos de Massagem ──
+async function loadTipos() {
+  const res = await api('/api/tipos-massagem');
+  if (!res) return;
+  const d = await res.json();
+  const el = document.getElementById('list-tipos');
+  if (!d.items.length) { el.innerHTML = '<div class="mgmt-empty">Nenhum tipo cadastrado.</div>'; return; }
+  el.innerHTML = '<div class="mgmt-list">' + d.items.map(t => `
+    <div class="mgmt-item ${t.ativo ? '' : 'mgmt-item-inativo'}">
+      <span class="mgmt-item-nome">${t.nome}</span>
+      <span class="mgmt-item-meta">${t.duracao_min ? t.duracao_min + 'min' : '—'}${t.preco ? ' · R$' + Number(t.preco).toFixed(2) : ''}</span>
+      ${t.ativo ? '' : '<span class="mgmt-item-meta">inativo</span>'}
+      <button class="btn btn-outline btn-sm" onclick="editTipo(${t.id},'${t.nome.replace(/'/g,"\\'")}',${t.duracao_min||'null'},${t.preco||'null'},${t.ativo})"
+        style="padding:.2rem .55rem;font-size:.65rem">Editar</button>
+      <button class="btn btn-danger btn-sm" onclick="delTipo(${t.id})"
+        style="padding:.2rem .55rem;font-size:.65rem">✕</button>
+    </div>`).join('') + '</div>';
+}
+
+document.getElementById('btn-add-tipo').addEventListener('click', async () => {
+  const nome = document.getElementById('inp-t-nome').value.trim();
+  const duracao_min = parseInt(document.getElementById('inp-t-duracao').value) || null;
+  const preco = parseFloat(document.getElementById('inp-t-preco').value) || null;
+  const err = document.getElementById('err-tipo');
+  err.textContent = '';
+  if (!nome) { err.textContent = 'Informe o nome.'; return; }
+  const res = await api('/api/tipos-massagem', { method: 'POST', body: JSON.stringify({ nome, duracao_min, preco }) });
+  if (!res) return;
+  const d = await res.json();
+  if (!d.ok) { err.textContent = d.error; return; }
+  document.getElementById('inp-t-nome').value = '';
+  document.getElementById('inp-t-duracao').value = '';
+  document.getElementById('inp-t-preco').value = '';
+  loadTipos();
+});
+
+window.editTipo = async (id, nomeAtual, duracaoAtual, precoAtual, ativoAtual) => {
+  const nome = prompt('Nome:', nomeAtual);
+  if (nome === null) return;
+  const dur = prompt('Duração (min):', duracaoAtual || '');
+  const preco = prompt('Preço (R$):', precoAtual || '');
+  const ativo = confirm('Tipo ativo?') ? 1 : 0;
+  const res = await api(`/api/tipos-massagem/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ nome, duracao_min: parseInt(dur) || null, preco: parseFloat(preco) || null, ativo }),
+  });
+  if (res) loadTipos();
+};
+
+window.delTipo = async (id) => {
+  if (!confirm('Excluir este tipo?')) return;
+  const res = await api(`/api/tipos-massagem/${id}`, { method: 'DELETE' });
+  if (res) loadTipos();
+};

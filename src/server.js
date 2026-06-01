@@ -8,6 +8,7 @@ import { readFileSync } from 'fs';
 import { initDb } from './db.js';
 import feedbackRouter from './routes/feedback.js';
 import authRouter from './routes/auth.js';
+import cadastrosRouter from './routes/cadastros.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/auth', authRouter);
+app.use('/api', cadastrosRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, uptime: process.uptime(), version: pkg.version });
