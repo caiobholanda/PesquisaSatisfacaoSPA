@@ -167,6 +167,30 @@
 
     .page-foot { text-align: center; font-size: 11.5px; color: #B8B8B8; line-height: 1.8; }
 
+    /* massagista autocomplete */
+    .massag-wrap { position: relative; }
+    .massag-toggle {
+      position: absolute; right: 2px; bottom: 8px;
+      background: none; border: none; padding: 4px; cursor: pointer;
+      color: #C8C0AE; line-height: 0; transition: color 0.25s;
+    }
+    .massag-toggle:hover, .field:focus-within .massag-toggle { color: var(--gold); }
+    .massag-list {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #FFFFFF; border: 1px solid #E4DAC6; border-top: 2px solid var(--gold);
+      z-index: 60; max-height: 210px; overflow-y: auto;
+      box-shadow: 0 12px 32px rgba(26,26,26,0.09);
+      animation: revealIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .massag-option {
+      padding: 10px 14px; font-size: 15px; font-family: 'Inter', sans-serif;
+      color: #1A1A1A; cursor: pointer; border-bottom: 1px solid #F0EBE0;
+      transition: background 0.12s, color 0.12s;
+    }
+    .massag-option:last-child { border-bottom: none; }
+    .massag-option:hover { background: #FAF6EF; color: var(--gold); }
+    .massag-empty { padding: 10px 14px; font-size: 13.5px; color: #B8B8B8; font-style: italic; }
+
     @keyframes enterUp { from { transform: translateY(10px); } to { transform: translateY(0); } }
     .enter { animation: enterUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
 
@@ -410,6 +434,61 @@
       );
     }
 
+    function MassagistaAutocomplete({ value, onChange, options }) {
+      const [open, setOpen] = useState(false);
+      const wrapRef = useRef(null);
+
+      const filtered = value.trim()
+        ? options.filter(n => n.toLowerCase().includes(value.toLowerCase()))
+        : options;
+
+      useEffect(() => {
+        function onDoc(e) {
+          if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+        }
+        document.addEventListener('mousedown', onDoc);
+        return () => document.removeEventListener('mousedown', onDoc);
+      }, []);
+
+      return (
+        <div className="massag-wrap" ref={wrapRef}>
+          <input
+            value={value}
+            onChange={e => { onChange(e.target.value); setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={e => { if (e.key === 'Escape' || e.key === 'Tab') setOpen(false); }}
+          />
+          {options.length > 0 && (
+            <button
+              type="button"
+              className="massag-toggle"
+              tabIndex={-1}
+              onMouseDown={e => { e.preventDefault(); setOpen(o => !o); }}
+              aria-label="Expandir lista"
+            >
+              <svg width="11" height="7" viewBox="0 0 11 7" fill="none">
+                <path d="M1 1L5.5 5.5L10 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+          {open && options.length > 0 && (
+            <div className="massag-list">
+              {filtered.length > 0
+                ? filtered.map(n => (
+                    <div
+                      key={n}
+                      className="massag-option"
+                      onMouseDown={e => { e.preventDefault(); onChange(n); setOpen(false); }}
+                    >{n}</div>
+                  ))
+                : <div className="massag-empty">Nenhum resultado</div>
+              }
+            </div>
+          )}
+        </div>
+      );
+    }
+
     function FormScreen({ visible, onSubmit }) {
       const [fields, setFields] = useState({
         nome: '', apto: '', email: '', tel: '', data: '', tratamento: '', massoterapeuta: '',
@@ -577,14 +656,11 @@
                 </div>
                 <div className="field field-full">
                   <FieldLabel pt="Nome da massoterapeuta" en="Massage therapist's name" />
-                  <input
-                    list="massagistas-list"
+                  <MassagistaAutocomplete
                     value={fields.massoterapeuta}
-                    onChange={(e) => set('massoterapeuta', e.target.value)}
+                    onChange={v => set('massoterapeuta', v)}
+                    options={massagistasOpts}
                   />
-                  <datalist id="massagistas-list">
-                    {massagistasOpts.map(n => <option key={n} value={n} />)}
-                  </datalist>
                   <span className="fill"></span>
                 </div>
               </div>
