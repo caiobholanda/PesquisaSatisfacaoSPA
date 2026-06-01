@@ -27,6 +27,7 @@ function showLogin() {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
+  showView('view-main');
 }
 
 // ── Login ──
@@ -284,17 +285,21 @@ function loadAll() { loadStats(); loadTable(); }
   document.getElementById('f-from').value = d30.toISOString().slice(0,10);
 })();
 
-// ── Modais de Cadastro ──
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// ── Navegação entre views ──
+const VIEWS = ['view-main', 'view-massagistas', 'view-tipos'];
 
-document.getElementById('btn-open-massagistas').addEventListener('click', () => { openModal('overlay-massagistas'); loadMassagistas(); });
-document.getElementById('close-massagistas').addEventListener('click', () => closeModal('overlay-massagistas'));
-document.getElementById('overlay-massagistas').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('overlay-massagistas'); });
+function showView(id) {
+  VIEWS.forEach(v => {
+    document.getElementById(v).style.display = v === id ? 'block' : 'none';
+  });
+  window.scrollTo(0, 0);
+}
 
-document.getElementById('btn-open-tipos').addEventListener('click', () => { openModal('overlay-tipos'); loadTipos(); });
-document.getElementById('close-tipos').addEventListener('click', () => closeModal('overlay-tipos'));
-document.getElementById('overlay-tipos').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('overlay-tipos'); });
+document.getElementById('btn-open-massagistas').addEventListener('click', () => { showView('view-massagistas'); loadMassagistas(); });
+document.getElementById('btn-back-massagistas').addEventListener('click', () => showView('view-main'));
+
+document.getElementById('btn-open-tipos').addEventListener('click', () => { showView('view-tipos'); loadTipos(); });
+document.getElementById('btn-back-tipos').addEventListener('click', () => showView('view-main'));
 
 // ── Massagistas ──
 async function loadMassagistas() {
@@ -302,6 +307,8 @@ async function loadMassagistas() {
   if (!res) return;
   const d = await res.json();
   const el = document.getElementById('list-massagistas');
+  const cnt = document.getElementById('count-massagistas');
+  if (cnt) cnt.textContent = d.items.length ? d.items.length + (d.items.length === 1 ? ' registro' : ' registros') : '';
   if (!d.items.length) { el.innerHTML = '<div class="mgmt-empty">Nenhuma massagista cadastrada.</div>'; return; }
   el.innerHTML = '<div class="mgmt-list">' + d.items.map(m => `
     <div class="mgmt-item ${m.ativo ? '' : 'mgmt-item-inativo'}">
@@ -345,6 +352,8 @@ async function loadTipos() {
   if (!res) return;
   const d = await res.json();
   const el = document.getElementById('list-tipos');
+  const cnt = document.getElementById('count-tipos');
+  if (cnt) cnt.textContent = d.items.length ? d.items.length + (d.items.length === 1 ? ' registro' : ' registros') : '';
   if (!d.items.length) { el.innerHTML = '<div class="mgmt-empty">Nenhum tipo cadastrado.</div>'; return; }
   el.innerHTML = '<div class="mgmt-list">' + d.items.map(t => `
     <div class="mgmt-item ${t.ativo ? '' : 'mgmt-item-inativo'}">
