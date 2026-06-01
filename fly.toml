@@ -1,4 +1,4 @@
-app = "pesquisa-satisfacao-spa"
+app = "pesquisa-satisfacao"
 primary_region = "gru"
 
 [build]

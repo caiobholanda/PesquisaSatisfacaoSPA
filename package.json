@@ -1,7 +1,7 @@
 {
-  "name": "pesquisa-satisfacao-spa",
+  "name": "pesquisa-satisfacao",
   "version": "1.0.0",
-  "description": "Sistema de Pesquisa de Satisfação Gran SPA — Hotel Gran Marquise",
+  "description": "Sistema de Pesquisa de Satisfação — Hotel Gran Marquise",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/caiobholanda/PesquisaSatisfacaoSPA.git"
+    "url": "git+https://github.com/caiobholanda/PesquisaSatisfacao.git"
   },
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/caiobholanda/PesquisaSatisfacaoSPA/issues"
+    "url": "https://github.com/caiobholanda/PesquisaSatisfacao/issues"
   },
-  "homepage": "https://github.com/caiobholanda/PesquisaSatisfacaoSPA#readme",
+  "homepage": "https://github.com/caiobholanda/PesquisaSatisfacao#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",

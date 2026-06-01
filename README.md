@@ -5,8 +5,8 @@ Sistema de coleta de avaliações via QR Code / WhatsApp.
 ## Instalação local
 
 ```bash
-git clone https://github.com/caiobholanda/PesquisaSatisfacaoSPA.git
-cd PesquisaSatisfacaoSPA
+git clone https://github.com/caiobholanda/PesquisaSatisfacao.git
+cd PesquisaSatisfacao
 npm install
 cp .env.example .env
 npm start
@@ -46,5 +46,5 @@ Adicione o token em: GitHub → Settings → Secrets → `FLY_API_TOKEN`
 ## Backup
 
 ```bash
-fly ssh sftp get /app/data/feedback.db ./backup.db --app pesquisa-satisfacao-spa
+fly ssh sftp get /app/data/feedback.db ./backup.db --app pesquisa-satisfacao
 ```
