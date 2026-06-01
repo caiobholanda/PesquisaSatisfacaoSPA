@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesquisa de Satisfação · Gran SPA by L'Occitane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --gold: #D4953D; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #1A1A1A;
+      background: #F5F0E6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    #root { min-height: 100vh; }
+
+    .app-root { --ui: #D4953D; --ui-soft: #C9A961; --ui-dark: #C2832F; }
+    .app-root[data-mode="colaborador"] { --ui: #2A5A6B; --ui-soft: #2A5A6B; --ui-dark: #234C5A; }
+
+    .ease-spa { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+    .serif { font-family: 'Cormorant Garamond', serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .en { font-style: italic; color: #6B6B6B; }
+
+    .screen { transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    .band-cta {
+      display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+      transition: filter 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .band-cta:hover { filter: brightness(1.05); }
+    .start-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      position: relative; overflow: hidden;
+      background: #C97A3D; color: #FFFFFF; border: 0;
+      padding: 15px 44px; letter-spacing: 0.2em; text-transform: uppercase; white-space: nowrap;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .start-btn:hover { background: #B36A30; }
+    .start-btn-en { font-size: 10px; font-weight: 400; letter-spacing: 0.18em; opacity: 0.88; }
+    .start-btn::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: #FFFFFF;
+      transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .start-btn:hover::after { transform: scaleX(1); }
+
+    .badge-internal {
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: #2A5A6B; border: 1px solid rgba(42,90,107,0.45);
+      padding: 7px 13px; backdrop-filter: blur(2px);
+    }
+
+    .form-wrap { max-width: 720px; margin: 0 auto; padding: 84px 24px 90px; }
+    @media (min-width: 768px) { .form-wrap { padding: 96px 40px 110px; } }
+    .form-wrap > section, .form-wrap > header, .form-wrap > footer { margin-bottom: 92px; }
+    @media (min-width: 768px) { .form-wrap > section { margin-bottom: 108px; } }
+
+    .form-title { font-weight: 500; font-size: 28px; color: #1A1A1A; letter-spacing: 0.01em; margin: 0 0 22px; }
+    @media (max-width: 600px) { .form-title { font-size: 23px; } }
+    .form-intro { font-size: 14.5px; line-height: 1.75; color: #4A4A4A; max-width: 620px; margin: 0 auto 14px; text-wrap: pretty; }
+    .form-intro.en { font-size: 13px; color: #6B6B6B; }
+
+    .progress-bar { position: sticky; top: 0; z-index: 30; background: #F5F0E6; padding: 16px 24px 12px; }
+    .progress-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 8px; }
+    .trace { height: 2px; flex: 1; background: #E2D7C2; overflow: hidden; }
+    .trace .tf { height: 100%; background: var(--ui); width: 0; transition: width 0.4s cubic-bezier(0.16,1,0.3,1); }
+
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px 40px; }
+    @media (max-width: 600px) { .field-grid { grid-template-columns: 1fr; gap: 26px; } }
+    .field-full { grid-column: 1 / -1; }
+    .field { position: relative; }
+    .field input, .field textarea {
+      width: 100%; background: transparent; border: 0; border-bottom: 1px solid #B8B8B8;
+      padding: 8px 2px; font-size: 16px; font-family: 'Inter', sans-serif; color: #1A1A1A;
+      outline: none; transition: border-color 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .field input::placeholder, .field textarea::placeholder { color: #B8B8B8; }
+    .field .fill {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--ui-soft);
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .field:focus-within .fill { transform: scaleX(1); }
+    .app-root .field.error input, .app-root .field.error textarea { border-bottom-color: #B85450 !important; }
+    .comment-field { margin-top: 46px; }
+    .inline-reveal { margin: 10px 0 6px 30px; max-width: 440px; animation: revealIn 0.45s cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes revealIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .colab-block { border-left: 2px solid #2A5A6B; padding-left: 22px; }
+    .colab-tag { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #2A5A6B; margin-bottom: 18px; }
+
+    .sec-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 14px; margin-bottom: 26px; }
+    .sec-num { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ui); letter-spacing: 0.1em; }
+    .sec-title { font-weight: 500; font-size: 17px; letter-spacing: 0.16em; text-transform: uppercase; color: #1A1A1A; }
+    .sec-title-en { font-size: 14px; letter-spacing: 0.08em; }
+
+    .scale-bar {
+      background: #D4953D; min-height: 56px; display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 10px 22px; flex-wrap: wrap; margin-bottom: 8px;
+    }
+    .scale-bar-title { color: #FFFFFF; font-weight: 500; font-size: 16px; display: flex; flex-direction: column; line-height: 1.25; }
+    .scale-bar-legend { display: flex; gap: 18px; }
+    .scale-legend-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .scale-legend-label { display: flex; flex-direction: column; align-items: center; color: #FFFFFF; font-size: 11.5px; font-weight: 500; line-height: 1.2; }
+    @media (max-width: 600px) { .scale-bar-legend { gap: 10px; } }
+
+    .rating-list { display: flex; flex-direction: column; }
+    .rating-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      padding: 22px 0; border-bottom: 1px solid #E4DAC6;
+    }
+    .rating-text { flex: 1; line-height: 1.55; text-wrap: pretty; }
+    .rating-smileys { display: flex; gap: 6px; flex: none; }
+    @media (max-width: 600px) {
+      .rating-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .rating-smileys { gap: 14px; }
+    }
+    .smiley-btn {
+      display: flex; align-items: center; justify-content: center; padding: 6px;
+      border: 1px solid transparent; border-radius: 9999px; background: none; cursor: pointer;
+      transition: border-color 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .smiley-btn:hover { border-color: var(--ui-soft); }
+    .smiley-btn:focus-visible { outline: 2px solid var(--ui-soft); outline-offset: 2px; }
+    .smiley-btn.selected { border-color: #D4953D; }
+    .smiley-btn.selected svg { animation: smileyBounce 0.25s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes smileyBounce { 0% { transform: translateY(0); } 45% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
+
+    .radio-list { display: flex; flex-direction: column; gap: 16px; }
+    .radio-opt {
+      display: flex; align-items: flex-start; gap: 14px; background: none; border: 0; cursor: pointer;
+      font-size: 16px; color: #1A1A1A; padding: 6px 0; text-align: left; font-family: 'Inter', sans-serif; line-height: 1.5;
+    }
+    .radio-dot {
+      width: 18px; height: 18px; border-radius: 9999px; border: 1.5px solid #B8B8B8; position: relative;
+      flex: none; margin-top: 2px; transition: border-color 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .app-root .radio-dot.on { border-color: var(--ui); }
+    .radio-dot.on::after { content: ''; position: absolute; inset: 3px; border-radius: 9999px; background: var(--ui); animation: dotIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes dotIn { from { transform: scale(0); } to { transform: scale(1); } }
+    .client-type { display: flex; gap: 44px; }
+    @media (max-width: 600px) { .client-type { flex-direction: column; gap: 12px; } }
+    .err-msg { color: #B85450; font-size: 13px; margin-top: 14px; }
+
+    .form-foot { font-size: 15px; line-height: 1.7; color: #4A4A4A; }
+    .form-foot .en { font-size: 13px; }
+    .easter { text-align: center; font-style: italic; font-size: 22px; color: #B8924A; margin: -52px 0 40px; animation: revealIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+    .submit-wrap { display: flex; justify-content: center; margin-bottom: 56px; }
+    .submit-btn {
+      position: relative; overflow: hidden; height: 56px; width: 280px; max-width: 100%;
+      background: var(--ui); color: #FFFFFF; border: 0; cursor: pointer; font-size: 14px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Inter', sans-serif;
+      transition: background-color 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .submit-btn:hover { background: var(--ui-dark); }
+    .submit-btn::after {
+      content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%; background: #FFFFFF;
+      transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .submit-btn:hover::after { transform: scaleX(1); }
+    .page-foot { text-align: center; font-size: 11.5px; color: #B8B8B8; line-height: 1.8; }
+    .page-foot-mono { font-size: 10.5px; color: #6B6B6B; margin-top: 10px; letter-spacing: 0.06em; }
+
+    @keyframes enterUp { from { transform: translateY(10px); } to { transform: translateY(0); } }
+    .enter { animation: enterUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+    .confirm-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; background: #F5F0E6; }
+    .confirm-band { width: 120px; height: 4px; background: #D4953D; margin-bottom: 36px; }
+    .confirm-obrigado { font-weight: 300; font-size: clamp(56px, 10vw, 84px); color: #1A1A1A; line-height: 1; margin: 0; }
+    .confirm-sub { font-size: 15.5px; font-weight: 300; color: #4A4A4A; line-height: 1.8; margin: 26px 0 0; max-width: 420px; }
+    .back-btn {
+      margin-top: 44px; border: 1px solid #C8C0AE; background: transparent; color: #6B6B6B;
+      padding: 13px 30px; letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px; cursor: pointer;
+      font-family: 'Inter', sans-serif; white-space: nowrap; transition: border-color 0.4s cubic-bezier(0.16,1,0.3,1), color 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .back-btn:hover { border-color: var(--ui); color: var(--ui); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    function SunLogo({ size = 48, color = '#6B6B6B', strokeWidth = 0.8 }) {
+      const N = 28;
+      const rays = [];
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2;
+        const r1 = 9, r2 = 21;
+        rays.push(
+          <line key={i} x1={24 + Math.cos(a) * r1} y1={24 + Math.sin(a) * r1}
+            x2={24 + Math.cos(a) * r2} y2={24 + Math.sin(a) * r2}
+            stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" />
+        );
+      }
+      return (
+        <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
+          <circle cx="24" cy="24" r="6" fill="none" stroke={color} strokeWidth="1" />
+          {rays}
+        </svg>
+      );
+    }
+
+    function GranSpaWordmark({ style = {} }) {
+      return (
+        <span style={{ fontWeight: 300, letterSpacing: '0.16em', whiteSpace: 'nowrap', fontFamily: "'Inter', sans-serif", ...style }}>
+          <span style={{ color: '#4A4A4A' }}>GRAN</span>
+          <span style={{ color: '#C97A3D', marginLeft: '0.34em' }}>SPA</span>
+        </span>
+      );
+    }
+
+    function Smiley({ type = 'great', size = 36, color = '#6B6B6B', filled = false, strokeWidth = 2 }) {
+      const stroke = filled ? '#FFFFFF' : color;
+      const mouths = {
+        great: 'M11.5 23 Q20 33 28.5 23',
+        good: 'M12.5 24.5 Q20 29.5 27.5 24.5',
+        fair: 'M13 26 H27',
+        poor: 'M12.5 28.5 Q20 22.5 27.5 28.5',
+      };
+      return (
+        <svg viewBox="0 0 40 40" width={size} height={size} fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="17" fill={filled ? '#D4953D' : 'none'} stroke={stroke} strokeWidth={strokeWidth} />
+          <circle cx="14.6" cy="16.4" r="1.7" fill={stroke} />
+          <circle cx="25.4" cy="16.4" r="1.7" fill={stroke} />
+          <path d={mouths[type]} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+        </svg>
+      );
+    }
+
+    function LinenBackground() {
+      return (
+        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <pattern id="linen" width="6" height="6" patternUnits="userSpaceOnUse">
+              <rect width="6" height="6" fill="#EAE3D7" />
+              <path d="M0 0 H6" stroke="#E8DCC4" strokeWidth="1.4" />
+              <path d="M0 3 H6" stroke="#E2D6BE" strokeWidth="0.6" opacity="0.5" />
+              <path d="M0 0 V6" stroke="#E8DCC4" strokeWidth="1.4" />
+              <path d="M3 0 V6" stroke="#E2D6BE" strokeWidth="0.6" opacity="0.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#linen)" />
+        </svg>
+      );
+    }
+
+    function FieldLabel({ pt, en }) {
+      return (
+        <div style={{ marginBottom: 5, lineHeight: 1.3 }}>
+          <span style={{ fontSize: 13.5, color: '#4A4A4A', letterSpacing: '0.005em' }}>{pt}</span>{' '}
+          <span className="en" style={{ fontSize: 12 }}>{en}</span>
+        </div>
+      );
+    }
+
+    const RATINGS = [
+      { key: 'otimo', pt: 'Ótimo', en: 'Excellent', type: 'great' },
+      { key: 'bom', pt: 'Bom', en: 'Good', type: 'good' },
+      { key: 'regular', pt: 'Regular', en: 'Fair', type: 'fair' },
+      { key: 'ruim', pt: 'Ruim', en: 'Poor', type: 'poor' },
+    ];
+
+    const SERVICES = [
+      { id: 's0', pt: 'A expectativa do tratamento', en: 'Your expectations.' },
+      { id: 's1', pt: 'A explicação da massoterapeuta sobre os benefícios e procedimentos', en: 'The massage therapist’s explanation about the benefits and procedures.' },
+      { id: 's2', pt: 'A atitude e a qualidade dos serviços prestados pela massoterapeuta', en: 'The attitude and the quality of the services provided by the massage therapist.' },
+      { id: 's3', pt: 'A técnica e a habilidade da massoterapeuta', en: 'The massage therapist’s technique and ability.' },
+    ];
+
+    const FACILITIES = [
+      { id: 'f0', pt: 'Conforto e conservação da estrutura do SPA', en: 'SPA comfort and cleanliness.' },
+      { id: 'f1', pt: 'Organização da sala, equipamentos e a atmosfera do ambiente', en: 'Room organization, equipment and atmosphere.' },
+      { id: 'f2', pt: 'Os itens de conveniência (roupões, toalhas, etc) fornecidos durante o tratamento foram suficientes', en: 'Were the convenience items (bathrobes, towels, etc.) provided during treatment sufficient?' },
+    ];
+
+    function WelcomeScreen({ mode, visible, onStart }) {
+      return (
+        <div className="screen min-h-screen w-full grid md:grid-cols-2" style={{ opacity: visible ? 1 : 0 }}>
+          <div className="relative bg-[#F5F0E6] flex flex-col justify-end p-10 md:p-16 min-h-[42vh] md:min-h-screen order-2 md:order-1">
+            <div className="absolute left-0 right-0" style={{ top: '52%', height: 24, background: '#D4953D' }}></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-4">
+                <SunLogo size={52} color="#6B6B6B" />
+                <div style={{ lineHeight: 1.18 }}>
+                  <div style={{ fontSize: 12, letterSpacing: '0.34em', color: '#6B6B6B', fontWeight: 300 }}>HOTEL</div>
+                  <div style={{ fontSize: 19, letterSpacing: '0.18em', color: '#4A4A4A', fontWeight: 300 }}>GRAN&nbsp;MARQUISE</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 22, fontSize: 12.5, color: '#6B6B6B', fontWeight: 300, lineHeight: 1.9 }}>
+                <div>Av. Beira Mar, 3980</div>
+                <div>(85) 4006-5000</div>
+                <div>www.granmarquise.com.br</div>
+              </div>
+            </div>
+          </div>
+          <div className="relative min-h-[58vh] md:min-h-screen flex overflow-hidden order-1 md:order-2" style={{ background: '#EAE3D7' }}>
+            <LinenBackground />
+            <div className="absolute pointer-events-none" style={{ inset: 20, border: '1px solid rgba(255,255,255,0.55)' }}></div>
+            <div className="relative z-10 w-full flex flex-col items-center px-6 py-14 md:py-16">
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <GranSpaWordmark style={{ fontSize: 'clamp(38px, 6.4vw, 78px)' }} />
+                <div className="serif" style={{ fontStyle: 'italic', fontWeight: 400, color: '#7A6A55', fontSize: 'clamp(20px, 2.8vw, 34px)', marginTop: 6, letterSpacing: '0.01em' }}>
+                  by L&rsquo;Occitane
+                </div>
+              </div>
+              <div className="w-full max-w-sm">
+                <button className="band-cta ease-spa" onClick={onStart} aria-label="Iniciar avaliação">
+                  <div className="flex items-stretch" style={{ background: '#D4953D', minHeight: 70 }}>
+                    <div style={{ width: 2, background: 'rgba(255,255,255,0.85)', margin: '14px 0 14px 22px' }}></div>
+                    <div className="flex flex-col justify-center" style={{ color: '#FFFFFF', padding: '0 22px', letterSpacing: '0.22em', fontWeight: 500, fontSize: 16, lineHeight: 1.45 }}>
+                      <span>AVALIE SUA</span>
+                      <span>EXPERIÊNCIA</span>
+                    </div>
+                  </div>
+                </button>
+                <div className="flex justify-center" style={{ marginTop: 26 }}>
+                  <button className="start-btn ease-spa" onClick={onStart}>
+                    <span>Iniciar avaliação</span>
+                    <span className="start-btn-en">Start review</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {mode === 'colaborador' && (
+            <div className="badge-internal" style={{ position: 'fixed', top: 18, right: 18, zIndex: 40, background: 'rgba(245,240,230,0.9)' }}>
+              Versão interna · Colaborador
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function AutoTextarea({ value, onChange, placeholder }) {
+      const ref = useRef(null);
+      const resize = () => {
+        const el = ref.current;
+        if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+      };
+      useEffect(resize, [value]);
+      return (
+        <textarea ref={ref} rows={1} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
+          style={{ overflow: 'hidden', resize: 'none' }} />
+      );
+    }
+
+    function ScaleBar() {
+      return (
+        <div className="scale-bar">
+          <div className="scale-bar-title">
+            <span>Como você classifica:</span>
+            <span className="en" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13 }}>Your rating:</span>
+          </div>
+          <div className="scale-bar-legend">
+            {RATINGS.map((r) => (
+              <div key={r.key} className="scale-legend-item">
+                <Smiley type={r.type} size={30} color="#FFFFFF" />
+                <div className="scale-legend-label">
+                  <span>{r.pt}</span>
+                  <span className="en" style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10.5 }}>{r.en}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function RatingRow({ q, value, onPick }) {
+      return (
+        <div className="rating-row">
+          <div className="rating-text">
+            <span style={{ color: '#1A1A1A', fontSize: 15.5 }}>{q.pt}</span>{' '}
+            <span className="en" style={{ fontSize: 13 }}>{q.en}</span>
+          </div>
+          <div className="rating-smileys">
+            {RATINGS.map((r) => {
+              const selected = value === r.key;
+              return (
+                <button key={r.key} type="button" aria-label={r.pt} aria-pressed={selected}
+                  className={'smiley-btn ease-spa' + (selected ? ' selected' : '')}
+                  onClick={() => onPick(r.key)}>
+                  <Smiley type={r.type} size={36} color="#9A9A9A" filled={selected} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    function RadioOption({ checked, onClick, pt, en, children }) {
+      return (
+        <div>
+          <button type="button" className="radio-opt" onClick={onClick} aria-pressed={checked}>
+            <span className={'radio-dot ease-spa' + (checked ? ' on' : '')}></span>
+            <span>
+              <span style={{ color: '#1A1A1A' }}>{pt}</span>{' '}
+              <span className="en" style={{ fontSize: 13 }}>{en}</span>
+            </span>
+          </button>
+          {checked && children}
+        </div>
+      );
+    }
+
+    function SectionHeading({ num, pt, en }) {
+      return (
+        <div className="sec-heading">
+          <span className="sec-num">{num}</span>
+          <span className="sec-title">{pt}</span>
+          <span className="en sec-title-en">{en}</span>
+        </div>
+      );
+    }
+
+    function FormScreen({ mode, visible, sessionTs, onSubmit }) {
+      const [fields, setFields] = useState({
+        nome: '', apto: '', email: '', tel: '', data: '', tratamento: '', massoterapeuta: '',
+        colabNome: '', colabMatricula: '',
+      });
+      const [ratings, setRatings] = useState({});
+      const [comentarioServicos, setComentarioServicos] = useState('');
+      const [comentarioInstalacoes, setComentarioInstalacoes] = useState('');
+      const [recommend, setRecommend] = useState('');
+      const [recommendText, setRecommendText] = useState('');
+      const [clientType, setClientType] = useState('');
+      const [errors, setErrors] = useState({});
+      const [fills, setFills] = useState([0, 0, 0, 0]);
+
+      const set = (k, v) => setFields((f) => ({ ...f, [k]: v }));
+      const pick = (id, v) => setRatings((r) => ({ ...r, [id]: v }));
+
+      const refNome = useRef(null), refEmail = useRef(null), refClient = useRef(null);
+      const secRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+
+      const allGreatKeys = [...SERVICES, ...FACILITIES].map((q) => q.id);
+      const allGreat = allGreatKeys.every((k) => ratings[k] === 'otimo');
+
+      useEffect(() => {
+        const onScroll = () => {
+          const mid = window.scrollY + window.innerHeight * 0.45;
+          setFills(secRefs.map((r) => {
+            if (!r.current) return 0;
+            const top = r.current.offsetTop;
+            const h = r.current.offsetHeight;
+            return Math.min(1, Math.max(0, (mid - top) / h));
+          }));
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+      }, []);
+
+      const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+
+      const handleSubmit = () => {
+        const errs = {};
+        if (!fields.nome.trim()) errs.nome = true;
+        if (!isEmail(fields.email)) errs.email = true;
+        if (!clientType) errs.clientType = true;
+        setErrors(errs);
+        if (Object.keys(errs).length) {
+          const order = [['nome', refNome], ['email', refEmail], ['clientType', refClient]];
+          const first = order.find(([k]) => errs[k]);
+          if (first && first[1].current) {
+            const y = first[1].current.getBoundingClientRect().top + window.scrollY - 130;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+          return;
+        }
+        const payload = {
+          origem: mode,
+          hospede: { nome: fields.nome, apto: fields.apto, email: fields.email, tel: fields.tel, data: fields.data, tratamento: fields.tratamento, massoterapeuta: fields.massoterapeuta },
+          servicos: { avaliacoes: SERVICES.map((q) => ({ pergunta: q.pt, nota: ratings[q.id] || null })), comentario: comentarioServicos },
+          instalacoes: { avaliacoes: FACILITIES.map((q) => ({ pergunta: q.pt, nota: ratings[q.id] || null })), comentario: comentarioInstalacoes },
+          recomendacao: { opcao: recommend, detalhe: recommendText },
+          tipoCliente: clientType,
+        };
+        if (mode === 'colaborador') {
+          payload.colaborador = { nome: fields.colabNome, matricula: fields.colabMatricula };
+        }
+        console.log('Gran SPA · pesquisa de satisfação — payload:', payload);
+        onSubmit(payload);
+      };
+
+      return (
+        <div className="screen" style={{ opacity: visible ? 1 : 0 }}>
+          {mode === 'colaborador' && (
+            <div className="badge-internal" style={{ position: 'fixed', top: 18, right: 18, zIndex: 40, background: 'rgba(245,240,230,0.92)' }}>
+              Versão interna · Colaborador
+            </div>
+          )}
+          <div className="progress-bar">
+            <div className="progress-inner">
+              {fills.map((f, i) => (
+                <div key={i} className="trace"><div className="tf" style={{ width: f * 100 + '%' }}></div></div>
+              ))}
+            </div>
+          </div>
+          <div className="form-wrap">
+            <header className="enter" style={{ animationDelay: '0ms', textAlign: 'center' }}>
+              <h1 className="form-title">Formulário de Feedback de Serviço</h1>
+              <p className="form-intro">
+                Para que possamos continuar nos aperfeiçoando, gostaríamos que você respondesse as perguntas abaixo
+                assinalando a opção apropriada e devolvendo este formulário na recepção. Apreciamos seu feedback.
+              </p>
+              <p className="form-intro en">
+                Share your experience with us. Client Feedback Form. In order to continue improving our services, we
+                would like you to answer the following questions by selecting the appropriate checkbox and returning
+                this form at the reception desk. We appreciate your feedback.
+              </p>
+            </header>
+            {mode === 'colaborador' && (
+              <section className="enter" style={{ animationDelay: '90ms' }}>
+                <div className="colab-block">
+                  <div className="colab-tag">Identificação do colaborador · uso interno</div>
+                  <div className="field-grid">
+                    <div className="field">
+                      <FieldLabel pt="Nome do colaborador" en="Staff name" />
+                      <input value={fields.colabNome} onChange={(e) => set('colabNome', e.target.value)} />
+                      <span className="fill"></span>
+                    </div>
+                    <div className="field">
+                      <FieldLabel pt="Matrícula" en="Employee ID" />
+                      <input value={fields.colabMatricula} onChange={(e) => set('colabMatricula', e.target.value)} />
+                      <span className="fill"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+            <section className="enter" style={{ animationDelay: '180ms' }}>
+              <div className="field-grid">
+                <div className={'field' + (errors.nome ? ' error' : '')} ref={refNome}>
+                  <FieldLabel pt="Nome *" en="Name" />
+                  <input value={fields.nome} onChange={(e) => set('nome', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className="field">
+                  <FieldLabel pt="Nº do Apto" en="Room number" />
+                  <input value={fields.apto} onChange={(e) => set('apto', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className={'field' + (errors.email ? ' error' : '')} ref={refEmail}>
+                  <FieldLabel pt="E-mail *" en="E-mail" />
+                  <input type="email" value={fields.email} onChange={(e) => set('email', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className="field">
+                  <FieldLabel pt="Tel" en="Phone" />
+                  <input value={fields.tel} onChange={(e) => set('tel', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className="field">
+                  <FieldLabel pt="Data" en="Date" />
+                  <input type="date" value={fields.data} onChange={(e) => set('data', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className="field">
+                  <FieldLabel pt="Tratamento realizado" en="Spa treatment provided" />
+                  <input value={fields.tratamento} onChange={(e) => set('tratamento', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+                <div className="field field-full">
+                  <FieldLabel pt="Nome da massoterapeuta" en="Massage therapist's name" />
+                  <input value={fields.massoterapeuta} onChange={(e) => set('massoterapeuta', e.target.value)} />
+                  <span className="fill"></span>
+                </div>
+              </div>
+            </section>
+            <section ref={secRefs[0]} className="enter" style={{ animationDelay: '270ms' }}>
+              <SectionHeading num="1" pt="Serviços" en="Services" />
+              <ScaleBar />
+              <div className="rating-list">
+                {SERVICES.map((q) => (
+                  <RatingRow key={q.id} q={q} value={ratings[q.id]} onPick={(v) => pick(q.id, v)} />
+                ))}
+              </div>
+              <div className="field comment-field">
+                <FieldLabel pt="Comentário e sugestões adicionais" en="Additional comments and suggestions:" />
+                <AutoTextarea value={comentarioServicos} onChange={setComentarioServicos} />
+                <span className="fill"></span>
+              </div>
+            </section>
+            <section ref={secRefs[1]} className="enter">
+              <SectionHeading num="2" pt="Instalações" en="Facilities" />
+              <ScaleBar />
+              <div className="rating-list">
+                {FACILITIES.map((q) => (
+                  <RatingRow key={q.id} q={q} value={ratings[q.id]} onPick={(v) => pick(q.id, v)} />
+                ))}
+              </div>
+              <div className="field comment-field">
+                <FieldLabel pt="Comentário e sugestões adicionais" en="Additional comments and suggestions:" />
+                <AutoTextarea value={comentarioInstalacoes} onChange={setComentarioInstalacoes} />
+                <span className="fill"></span>
+              </div>
+            </section>
+            <section ref={secRefs[2]}>
+              <SectionHeading num="3" pt="Você recomendaria algum tratamento em particular?" en="Would you recommend any particular treatment?" />
+              <div className="radio-list">
+                <RadioOption checked={recommend === 'sim'} onClick={() => setRecommend('sim')} pt="Sim" en="Yes — Qual? / Which?">
+                  <div className="field inline-reveal">
+                    <input value={recommendText} onChange={(e) => setRecommendText(e.target.value)} placeholder="Qual tratamento? / Which one?" />
+                    <span className="fill"></span>
+                  </div>
+                </RadioOption>
+                <RadioOption checked={recommend === 'nao'} onClick={() => setRecommend('nao')} pt="Não" en="No — Porque? / Why?">
+                  <div className="field inline-reveal">
+                    <input value={recommendText} onChange={(e) => setRecommendText(e.target.value)} placeholder="Por quê? / Why not?" />
+                    <span className="fill"></span>
+                  </div>
+                </RadioOption>
+              </div>
+            </section>
+            <section ref={secRefs[3]}>
+              <SectionHeading num="4" pt="Tipo de cliente *" en="Type of guest" />
+              <div ref={refClient} className={'client-type' + (errors.clientType ? ' error-note' : '')}>
+                <RadioOption checked={clientType === 'lazer'} onClick={() => setClientType('lazer')} pt="Lazer" en="Leisure" />
+                <RadioOption checked={clientType === 'negocios'} onClick={() => setClientType('negocios')} pt="Negócios" en="Business" />
+                <RadioOption checked={clientType === 'evento'} onClick={() => setClientType('evento')} pt="Evento" en="Event" />
+              </div>
+              {errors.clientType && <div className="err-msg">Selecione o tipo de cliente. / Please select a guest type.</div>}
+            </section>
+            <footer className="form-foot">
+              <p style={{ marginBottom: 18 }}>
+                Obrigado por contribuir com o nosso sistema de melhoria.<br />
+                <span className="en">Thank you for taking the time to evaluate us.</span>
+              </p>
+              <p className="serif" style={{ fontStyle: 'italic', color: '#6B6B6B', fontSize: 18, marginBottom: 14 }}>Atenciosamente,</p>
+              <p>
+                <span style={{ fontWeight: 500, color: '#B8924A' }}>Equipe do Gran SPA by L&rsquo;Occitane</span><br />
+                <span className="en">Gran SPA by L&rsquo;Occitane team</span>
+              </p>
+            </footer>
+            {mode === 'cliente' && allGreat && (
+              <p className="easter serif">Ficamos honrados em receber sua visita.</p>
+            )}
+            <div className="submit-wrap">
+              <button className="submit-btn ease-spa" onClick={handleSubmit}>
+                {mode === 'colaborador' ? 'Registrar avaliação · Versão interna' : 'Enviar avaliação'}
+              </button>
+            </div>
+            <div className="page-foot">
+              <div>Hotel Gran Marquise · Av. Beira Mar, 3980 · Fortaleza-CE · (85) 4006-5000 · www.granmarquise.com.br</div>
+              {mode === 'colaborador' && (
+                <div className="mono page-foot-mono">Origem: colaborador · Sessão: {sessionTs}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ConfirmationScreen({ visible, onRestart }) {
+      return (
+        <div className="screen confirm-wrap" style={{ opacity: visible ? 1 : 0 }}>
+          <div className="confirm-band"></div>
+          <h1 className="serif confirm-obrigado">Obrigado.</h1>
+          <p className="confirm-sub">
+            Por compartilhar sua experiência conosco.<br />Esperamos vê-lo em breve no Gran SPA.
+          </p>
+          <button className="back-btn ease-spa" onClick={onRestart}>Voltar ao início</button>
+        </div>
+      );
+    }
+
+    function App() {
+      const mode = 'cliente';
+      const [screen, setScreen] = useState('welcome');
+      const [visible, setVisible] = useState(true);
+
+      const go = (next) => {
+        setVisible(false);
+        setTimeout(() => { setScreen(next); window.scrollTo(0, 0); setVisible(true); }, 600);
+      };
+
+      return (
+        <div className="app-root" data-mode={mode}>
+          {screen === 'welcome' && <WelcomeScreen mode={mode} visible={visible} onStart={() => go('form')} />}
+          {screen === 'form' && <FormScreen mode={mode} visible={visible} onSubmit={() => go('confirm')} />}
+          {screen === 'confirm' && <ConfirmationScreen visible={visible} onRestart={() => go('welcome')} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
