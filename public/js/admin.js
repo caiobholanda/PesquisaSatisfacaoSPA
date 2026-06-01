@@ -54,7 +54,55 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
 document.getElementById('btn-sair').addEventListener('click', logout);
 
-// ── Stats ──
+// ── Stats + Análise ──
+const SERVICOS_LABELS = [
+  { campo: 'servicos_expectativa', label: 'A expectativa do tratamento' },
+  { campo: 'servicos_explicacao', label: 'A explicação da massoterapeuta sobre benefícios e procedimentos' },
+  { campo: 'servicos_atitude', label: 'A atitude e a qualidade dos serviços da massoterapeuta' },
+  { campo: 'servicos_tecnica', label: 'A técnica e a habilidade da massoterapeuta' },
+];
+const INSTALACOES_LABELS = [
+  { campo: 'instalacoes_conforto', label: 'Conforto e conservação da estrutura' },
+  { campo: 'instalacoes_organizacao', label: 'Organização da sala, equipamentos e atmosfera' },
+  { campo: 'instalacoes_conveniencia', label: 'Itens de conveniência (roupões, toalhas, etc.)' },
+];
+
+function renderDistBar(dist) {
+  if (!dist || dist.total === 0) return '<div class="dist-empty">Sem respostas no período</div>';
+  const pct = (k) => dist.total ? +(dist[k] / dist.total * 100).toFixed(1) : 0;
+  const seg = (k) => { const p = pct(k); return p > 0 ? `<div class="dist-seg seg-${k}" style="width:${p}%">${p >= 9 ? p + '%' : ''}</div>` : ''; };
+  const leg = (k, lbl) => `<span class="dist-leg"><span class="dist-leg-dot ${k}"></span><strong>${pct(k)}%</strong> ${lbl} (${dist[k]})</span>`;
+  return `<div class="dist-bar">${seg('otimo')}${seg('bom')}${seg('regular')}${seg('ruim')}</div>
+    <div class="dist-legend">${leg('otimo','Ótimo')}${leg('bom','Bom')}${leg('regular','Regular')}${leg('ruim','Ruim')}<span class="dist-leg" style="margin-left:auto">${dist.total} resp.</span></div>`;
+}
+
+function renderTextoGroup(titulo, items) {
+  if (!items || !items.length) return '';
+  return `<div class="textos-sub">${titulo}</div><div class="texto-list">${items.map(t =>
+    `<div class="texto-item"><div class="ti-text">"${t.texto}"</div><div class="ti-meta">${t.nome} · ${fmtDate(t.data)}</div></div>`
+  ).join('')}</div>`;
+}
+
+function renderAnalysis(d) {
+  const grid = document.getElementById('analysis-grid');
+  if (!d.distribuicoes) { grid.style.display = 'none'; return; }
+  grid.style.display = 'grid';
+  document.getElementById('dist-servicos').innerHTML = SERVICOS_LABELS.map(({ campo, label }) =>
+    `<div class="q-row"><div class="q-label">${label}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
+  document.getElementById('dist-instalacoes').innerHTML = INSTALACOES_LABELS.map(({ campo, label }) =>
+    `<div class="q-row"><div class="q-label">${label}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
+  const t = d.textos || {};
+  const cols = [
+    renderTextoGroup('Comentários sobre serviços', t.servicos),
+    renderTextoGroup('Comentários sobre instalações', t.instalacoes),
+    renderTextoGroup('Recomendaria a quem?', t.recomenda_qual),
+    renderTextoGroup('Por que recomendaria?', t.recomenda_porque),
+  ].filter(Boolean);
+  document.getElementById('dist-textos').innerHTML = cols.length
+    ? cols.map(c => `<div>${c}</div>`).join('')
+    : '<div class="dist-empty">Nenhum comentário no período.</div>';
+}
+
 async function loadStats() {
   const params = new URLSearchParams();
   if (_filters.from) params.set('from', _filters.from);
@@ -69,6 +117,7 @@ async function loadStats() {
   const h = d.porOrigem.find(r => r.origem === 'hospede')?.t || 0;
   const c = d.porOrigem.find(r => r.origem === 'colaborador')?.t || 0;
   document.getElementById('kpi-origem').innerHTML = `<span style="color:var(--gold)">${h}</span> / <span style="color:#818CF8">${c}</span>`;
+  renderAnalysis(d);
 }
 
 // ── Table ──

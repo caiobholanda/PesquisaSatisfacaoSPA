@@ -122,6 +122,39 @@
     #msg-login{font-size:.75rem;color:var(--danger);margin-top:.75rem;min-height:1.2em}
     .spinner{width:11px;height:11px;border:1.5px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── Análise ── */
+    .analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1px}
+    @media(max-width:900px){.analysis-grid{grid-template-columns:1fr}}
+    .analysis-block{background:var(--surface);padding:1.75rem}
+    .analysis-block.full{grid-column:1/-1}
+    .block-head{display:flex;align-items:baseline;gap:.75rem;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+    .block-num{font-family:var(--mono);font-size:.65rem;color:var(--gold);letter-spacing:.1em}
+    .block-title{font-family:var(--serif);font-size:1.15rem;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+    .q-row{margin-bottom:1.25rem}
+    .q-row:last-child{margin-bottom:0}
+    .q-label{font-size:.78rem;color:var(--muted2);margin-bottom:.5rem;line-height:1.4}
+    .dist-bar{display:flex;height:20px;overflow:hidden;background:var(--border-soft)}
+    .dist-seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.58rem;font-weight:500;color:#fff;overflow:hidden;white-space:nowrap;min-width:0}
+    .dist-seg.seg-otimo{background:var(--success)}
+    .dist-seg.seg-bom{background:var(--gold)}
+    .dist-seg.seg-regular{background:var(--warn)}
+    .dist-seg.seg-ruim{background:var(--danger)}
+    .dist-legend{display:flex;gap:.85rem;margin-top:.4rem;flex-wrap:wrap}
+    .dist-leg{font-size:.67rem;display:flex;align-items:center;gap:.3rem;color:var(--muted)}
+    .dist-leg-dot{width:7px;height:7px;flex-shrink:0}
+    .dist-leg-dot.otimo{background:var(--success)}
+    .dist-leg-dot.bom{background:var(--gold)}
+    .dist-leg-dot.regular{background:var(--warn)}
+    .dist-leg-dot.ruim{background:var(--danger)}
+    .dist-leg strong{color:var(--text);font-weight:600}
+    .dist-empty{font-size:.78rem;color:var(--muted);font-style:italic;font-family:var(--serif)}
+    .texto-list{display:flex;flex-direction:column;gap:.5rem;max-height:260px;overflow-y:auto}
+    .texto-item{background:var(--surface2);border-left:2px solid var(--gold);padding:.55rem .8rem}
+    .texto-item .ti-text{font-size:.82rem;color:var(--muted2);line-height:1.5;font-style:italic}
+    .texto-item .ti-meta{font-size:.65rem;color:var(--muted);margin-top:.25rem;letter-spacing:.03em}
+    .textos-sub{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:.85rem 0 .45rem;padding-top:.6rem;border-top:1px solid var(--border-soft)}
+    .textos-sub:first-child{margin-top:0;padding-top:0;border-top:none}
   </style>
 </head>
 <body>
@@ -178,6 +211,21 @@
         <div class="kpi-label">Origem</div>
         <div class="kpi-val" id="kpi-origem" style="font-size:1.2rem;line-height:1.8">—</div>
         <div class="kpi-sub">hóspede / colaborador</div>
+      </div>
+    </div>
+
+    <div class="analysis-grid" id="analysis-grid" style="display:none">
+      <div class="analysis-block" id="block-servicos">
+        <div class="block-head"><span class="block-num">01</span><h3 class="block-title">Serviços</h3></div>
+        <div id="dist-servicos"></div>
+      </div>
+      <div class="analysis-block" id="block-instalacoes">
+        <div class="block-head"><span class="block-num">02</span><h3 class="block-title">Instalações</h3></div>
+        <div id="dist-instalacoes"></div>
+      </div>
+      <div class="analysis-block full" id="block-textos">
+        <div class="block-head"><span class="block-num">03</span><h3 class="block-title">Comentários &amp; Respostas</h3></div>
+        <div id="dist-textos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem"></div>
       </div>
     </div>
 

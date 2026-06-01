@@ -116,6 +116,13 @@ function avgNotas(items, campo) {
   if (!vals.length) return null;
   return +(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2);
 }
+function distNotas(items, campo) {
+  const d = { otimo: 0, bom: 0, regular: 0, ruim: 0, total: 0 };
+  for (const r of items) {
+    if (r[campo]) { d[r[campo]] = (d[r[campo]] || 0) + 1; d.total++; }
+  }
+  return d;
+}
 
 export function statsFeedback({ from, to } = {}) {
   const db = getDb();
@@ -150,12 +157,25 @@ export function statsFeedback({ from, to } = {}) {
   const recSim = recomenda.find(r => r.recomenda === 'sim')?.t || 0;
   const pctRecomenda = total > 0 ? +(recSim / total * 100).toFixed(1) : 0;
 
-  const comentarios = items
-    .filter(r => r.servicos_comentario || r.instalacoes_comentario)
-    .slice(0, 10)
-    .map(r => ({ id: r.id, nome: r.nome, servicos: r.servicos_comentario, instalacoes: r.instalacoes_comentario, submitted_at: r.submitted_at }));
+  const distribuicoes = {
+    servicos_expectativa: distNotas(items, 'servicos_expectativa'),
+    servicos_explicacao: distNotas(items, 'servicos_explicacao'),
+    servicos_atitude: distNotas(items, 'servicos_atitude'),
+    servicos_tecnica: distNotas(items, 'servicos_tecnica'),
+    instalacoes_conforto: distNotas(items, 'instalacoes_conforto'),
+    instalacoes_organizacao: distNotas(items, 'instalacoes_organizacao'),
+    instalacoes_conveniencia: distNotas(items, 'instalacoes_conveniencia'),
+  };
 
-  return { total, periodo: { from: dfrom, to: dto }, porOrigem, porTipo, recomenda, medias, mediaGeral, pctRecomenda, comentarios };
+  const mkTextos = (campo) => items.filter(r => r[campo]).map(r => ({ nome: r.nome, texto: r[campo], data: r.submitted_at }));
+  const textos = {
+    servicos: mkTextos('servicos_comentario'),
+    instalacoes: mkTextos('instalacoes_comentario'),
+    recomenda_qual: mkTextos('recomenda_qual'),
+    recomenda_porque: mkTextos('recomenda_porque'),
+  };
+
+  return { total, periodo: { from: dfrom, to: dto }, porOrigem, porTipo, recomenda, medias, mediaGeral, pctRecomenda, distribuicoes, textos };
 }
 
 export function buscarAdmin(username) {
