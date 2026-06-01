@@ -5,7 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import { initDb, listarMassagistas } from './db.js';
+import { initDb, listarMassagistas, listarTiposMassagem } from './db.js';
 import feedbackRouter from './routes/feedback.js';
 import authRouter from './routes/auth.js';
 import cadastrosRouter from './routes/cadastros.js';
@@ -25,6 +25,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/massagistas-ativas', (_req, res) => {
   res.json({ nomes: listarMassagistas().filter(m => m.ativo).map(m => m.nome) });
+});
+
+app.get('/api/tipos-massagem-ativos', (_req, res) => {
+  res.json({ nomes: listarTiposMassagem().filter(t => t.ativo).map(t => t.nome) });
 });
 
 app.get('/api/health', (_req, res) => {

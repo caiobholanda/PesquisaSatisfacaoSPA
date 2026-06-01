@@ -534,11 +534,16 @@
       const [submitting, setSubmitting] = useState(false);
       const [submitError, setSubmitError] = useState('');
       const [massagistasOpts, setMassagistasOpts] = useState([]);
+      const [tiposOpts, setTiposOpts] = useState([]);
 
       useEffect(() => {
         fetch('/api/massagistas-ativas')
           .then(r => r.json())
           .then(d => { if (d.nomes) setMassagistasOpts(d.nomes); })
+          .catch(() => {});
+        fetch('/api/tipos-massagem-ativos')
+          .then(r => r.json())
+          .then(d => { if (d.nomes) setTiposOpts(d.nomes); })
           .catch(() => {});
       }, []);
 
@@ -681,7 +686,11 @@
                 </div>
                 <div className="field">
                   <FieldLabel pt="Tratamento realizado" en="Spa treatment provided" />
-                  <input value={fields.tratamento} onChange={(e) => set('tratamento', e.target.value)} />
+                  <MassagistaAutocomplete
+                    value={fields.tratamento}
+                    onChange={v => set('tratamento', v)}
+                    options={tiposOpts}
+                  />
                   <span className="fill"></span>
                 </div>
                 <div className="field field-full">
