@@ -272,28 +272,25 @@ document.getElementById('btn-exportar').addEventListener('click', () => {
 
 function loadAll() { loadStats(); loadTable(); }
 
+// ── Navegação entre views ──
+function showView(id) {
+  ['view-main', 'view-massagistas', 'view-tipos'].forEach(v => {
+    document.getElementById(v).style.display = v === id ? 'block' : 'none';
+  });
+  window.scrollTo(0, 0);
+}
+
 // ── Init ──
 (function init() {
   const t = token();
   if (t) { showApp(); loadAll(); }
   else { showLogin(); }
 
-  // Default dates: últimos 30 dias
   const hoje = new Date();
   const d30 = new Date(Date.now() - 30 * 86400000);
   document.getElementById('f-to').value = hoje.toISOString().slice(0,10);
   document.getElementById('f-from').value = d30.toISOString().slice(0,10);
 })();
-
-// ── Navegação entre views ──
-const VIEWS = ['view-main', 'view-massagistas', 'view-tipos'];
-
-function showView(id) {
-  VIEWS.forEach(v => {
-    document.getElementById(v).style.display = v === id ? 'block' : 'none';
-  });
-  window.scrollTo(0, 0);
-}
 
 document.getElementById('btn-open-massagistas').addEventListener('click', () => { showView('view-massagistas'); loadMassagistas(); });
 document.getElementById('btn-back-massagistas').addEventListener('click', () => showView('view-main'));
