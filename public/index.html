@@ -176,9 +176,8 @@
     }
     .massag-toggle:hover, .field:focus-within .massag-toggle { color: var(--gold); }
     .massag-list {
-      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
       background: #FFFFFF; border: 1px solid #E4DAC6; border-top: 2px solid var(--gold);
-      z-index: 60; max-height: 210px; overflow-y: auto;
+      max-height: 210px; overflow-y: auto;
       box-shadow: 0 12px 32px rgba(26,26,26,0.09);
       animation: revealIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
     }
@@ -436,23 +435,66 @@
 
     function MassagistaAutocomplete({ value, onChange, options }) {
       const [open, setOpen] = useState(false);
+      const [pos, setPos] = useState(null);
+      const inputRef = useRef(null);
       const wrapRef = useRef(null);
 
       const filtered = value.trim()
         ? options.filter(n => n.toLowerCase().includes(value.toLowerCase()))
         : options;
 
+      function calcPos() {
+        if (!inputRef.current) return;
+        const r = inputRef.current.getBoundingClientRect();
+        setPos({ top: r.bottom + 6, left: r.left, width: r.width });
+      }
+
+      useEffect(() => {
+        if (open) calcPos();
+      }, [open, value]);
+
       useEffect(() => {
         function onDoc(e) {
-          if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+          const inWrap = wrapRef.current && wrapRef.current.contains(e.target);
+          const inPortal = e.target.closest && e.target.closest('.massag-list');
+          if (!inWrap && !inPortal) setOpen(false);
         }
+        function onScroll() { if (open) calcPos(); }
         document.addEventListener('mousedown', onDoc);
-        return () => document.removeEventListener('mousedown', onDoc);
-      }, []);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        return () => {
+          document.removeEventListener('mousedown', onDoc);
+          window.removeEventListener('scroll', onScroll);
+          window.removeEventListener('resize', onScroll);
+        };
+      }, [open]);
+
+      const dropdown = open && options.length > 0 && pos
+        ? ReactDOM.createPortal(
+            <div
+              className="massag-list"
+              style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
+            >
+              {filtered.length > 0
+                ? filtered.map(n => (
+                    <div
+                      key={n}
+                      className="massag-option"
+                      onMouseDown={e => { e.preventDefault(); onChange(n); setOpen(false); }}
+                    >{n}</div>
+                  ))
+                : <div className="massag-empty">Nenhum resultado</div>
+              }
+            </div>,
+            document.body
+          )
+        : null;
 
       return (
         <div className="massag-wrap" ref={wrapRef}>
           <input
+            ref={inputRef}
             value={value}
             onChange={e => { onChange(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
@@ -471,20 +513,7 @@
               </svg>
             </button>
           )}
-          {open && options.length > 0 && (
-            <div className="massag-list">
-              {filtered.length > 0
-                ? filtered.map(n => (
-                    <div
-                      key={n}
-                      className="massag-option"
-                      onMouseDown={e => { e.preventDefault(); onChange(n); setOpen(false); }}
-                    >{n}</div>
-                  ))
-                : <div className="massag-empty">Nenhum resultado</div>
-              }
-            </div>
-          )}
+          {dropdown}
         </div>
       );
     }
