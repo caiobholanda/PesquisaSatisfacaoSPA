@@ -520,7 +520,7 @@
 
     function FormScreen({ visible, onSubmit }) {
       const [fields, setFields] = useState({
-        nome: '', apto: '', email: '', tel: '', data: '', tratamento: '', massoterapeuta: '',
+        nome: '', apto: '', email: '', tel: '', data: new Date().toISOString().slice(0, 10), tratamento: '', massoterapeuta: '',
       });
       const [ratings, setRatings] = useState({});
       const [comentarioServicos, setComentarioServicos] = useState('');
@@ -671,11 +671,6 @@
                 <div className="field">
                   <FieldLabel pt="Tel" en="Phone" />
                   <input value={fields.tel} onChange={(e) => set('tel', e.target.value)} />
-                  <span className="fill"></span>
-                </div>
-                <div className="field">
-                  <FieldLabel pt="Data" en="Date" />
-                  <input type="date" value={fields.data} onChange={(e) => set('data', e.target.value)} />
                   <span className="fill"></span>
                 </div>
                 <div className="field">
