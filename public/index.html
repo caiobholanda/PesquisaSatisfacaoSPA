@@ -148,12 +148,6 @@
     .form-foot .en { font-size: 13px; }
     .easter { text-align: center; font-style: italic; font-size: 22px; color: #B8924A; margin: -52px 0 40px; animation: revealIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
 
-    /* origem */
-    .origem-wrap { padding: 22px 0 28px; border-top: 1px solid #E4DAC6; margin-bottom: 32px; }
-    .origem-label { font-size: 13px; color: #8A8A8A; font-style: italic; display: block; margin-bottom: 14px; letter-spacing: 0.01em; }
-    .origem-opts { display: flex; gap: 36px; }
-    @media (max-width: 600px) { .origem-opts { gap: 20px; } }
-
     /* submit */
     .submit-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 56px; gap: 14px; }
     .submit-btn {
@@ -426,7 +420,7 @@
       const [recommend, setRecommend] = useState('');
       const [recommendText, setRecommendText] = useState('');
       const [clientType, setClientType] = useState('');
-      const [origem, setOrigem] = useState('hospede');
+      const origem = 'hospede';
       const [errors, setErrors] = useState({});
       const [fills, setFills] = useState([0, 0, 0, 0]);
       const [submitting, setSubmitting] = useState(false);
@@ -533,12 +527,11 @@
               <h1 className="form-title">Formulário de Feedback de Serviço</h1>
               <p className="form-intro">
                 Para que possamos continuar nos aperfeiçoando, gostaríamos que você respondesse as perguntas abaixo
-                assinalando a opção apropriada e devolvendo este formulário na recepção. Apreciamos seu feedback.
+                assinalando a opção apropriada. Apreciamos seu feedback.
               </p>
               <p className="form-intro en">
                 Share your experience with us. Client Feedback Form. In order to continue improving our services, we
-                would like you to answer the following questions by selecting the appropriate checkbox and returning
-                this form at the reception desk. We appreciate your feedback.
+                would like you to answer the following questions by selecting the appropriate checkbox. We appreciate your feedback.
               </p>
             </header>
 
@@ -656,13 +649,6 @@
               <p className="easter serif">Ficamos honrados em receber sua visita.</p>
             )}
 
-            <div className="origem-wrap">
-              <span className="origem-label">Esta avaliação está sendo preenchida por: / This review is being filled out by:</span>
-              <div className="origem-opts">
-                <RadioOption checked={origem === 'hospede'} onClick={() => setOrigem('hospede')} pt="Hóspede" en="Guest" />
-                <RadioOption checked={origem === 'colaborador'} onClick={() => setOrigem('colaborador')} pt="Colaborador" en="Staff" />
-              </div>
-            </div>
 
             <div className="submit-wrap">
               {submitError && <div className="submit-err">{submitError}</div>}
