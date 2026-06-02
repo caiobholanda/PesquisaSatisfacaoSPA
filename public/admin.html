@@ -1473,6 +1473,8 @@
 
     .res-modal-body {
       padding: 1.25rem 1.75rem;
+      max-height: 65vh;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -1574,6 +1576,26 @@
     .res-fg select:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 3px var(--gold-dim);
+    }
+
+    .res-tempo-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,149,61,.25);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--gold-dark);
+      font-weight: 500;
+    }
+    .res-tempo-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      opacity: .7;
     }
 
     .res-modal-err {
@@ -1996,22 +2018,13 @@
           <option value="">— Selecione —</option>
         </select>
       </div>
-      <div class="res-frow">
-        <div class="res-fg">
-          <label>Data <span style="color:var(--danger)">*</span></label>
-          <input type="date" id="res-inp-data">
-        </div>
-        <div class="res-fg"></div>
+      <div class="res-fg">
+        <label>Data <span style="color:var(--danger)">*</span></label>
+        <input type="date" id="res-inp-data">
       </div>
-      <div class="res-frow">
-        <div class="res-fg">
-          <label>Início</label>
-          <input type="time" id="res-inp-inicio" min="08:00" max="21:00" step="1800">
-        </div>
-        <div class="res-fg">
-          <label>Fim</label>
-          <input type="time" id="res-inp-fim" min="08:30" max="22:00" step="1800">
-        </div>
+      <div class="res-tempo-info" id="res-tempo-info">
+        <span class="res-tempo-label">Horário</span>
+        <span id="res-tempo-val">—</span>
       </div>
     </div>
     <div class="res-modal-err" id="res-modal-err"></div>

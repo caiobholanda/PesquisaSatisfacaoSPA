@@ -711,8 +711,10 @@ const CAL_SLOT_PX = 60;
 let _calWeekOffset = 0;
 let _calDiaSel = null;
 let _reservas  = [];
-let _resSala   = null;
-let _resTipo   = null;
+let _resSala       = null;
+let _resTipo       = null;
+let _resHoraInicio = null;
+let _resHoraFim    = null;
 let _tratamentos = []; // [{nome, duracao_min}]
 
 async function loadTratamentosModal() {
@@ -855,12 +857,10 @@ function calOpenModal(salaId, data, hora) {
   ['res-inp-nome','res-inp-apto','res-inp-email','res-inp-tel','res-inp-tratamento'].forEach(id=>{
     document.getElementById(id).value='';
   });
+  _resHoraInicio = hora || '09:00';
+  _resHoraFim = null;
+  document.getElementById('res-tempo-val').textContent = _resHoraInicio;
   if(data) document.getElementById('res-inp-data').value=data;
-  if(hora){
-    document.getElementById('res-inp-inicio').value=hora;
-    const sm=calTimeMin(hora);
-    document.getElementById('res-inp-fim').value=calMinTime(Math.min(sm+60, CAL_H_END*60));
-  }
   document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',+b.dataset.sala===_resSala));
   loadTratamentosModal();
   setTimeout(()=>document.getElementById('res-inp-nome').focus(),50);
@@ -892,21 +892,12 @@ document.querySelectorAll('.res-tipo-btn').forEach(btn=>{
 
 document.getElementById('res-inp-tratamento').addEventListener('change', function() {
   const opt = this.options[this.selectedIndex];
-  const dur = parseInt(opt?.dataset?.dur || '0', 10);
-  if (!dur) return;
-  const ini = document.getElementById('res-inp-inicio').value;
-  if (!ini) return;
-  const fim = calMinTime(Math.min(calTimeMin(ini) + dur, CAL_H_END * 60));
-  document.getElementById('res-inp-fim').value = fim;
-});
-
-document.getElementById('res-inp-inicio').addEventListener('change', function() {
-  const sel = document.getElementById('res-inp-tratamento');
-  const opt = sel.options[sel.selectedIndex];
-  const dur = parseInt(opt?.dataset?.dur || '0', 10);
-  if (!dur) return;
-  const fim = calMinTime(Math.min(calTimeMin(this.value) + dur, CAL_H_END * 60));
-  document.getElementById('res-inp-fim').value = fim;
+  const rawDur = parseInt(opt?.dataset?.dur || '0', 10);
+  const dur = rawDur || 60;
+  if (!this.value) { _resHoraFim = null; document.getElementById('res-tempo-val').textContent = _resHoraInicio || '—'; return; }
+  _resHoraFim = calMinTime(Math.min(calTimeMin(_resHoraInicio) + dur, CAL_H_END * 60));
+  const durLabel = rawDur ? ` (${rawDur} min)` : '';
+  document.getElementById('res-tempo-val').textContent = `${_resHoraInicio} – ${_resHoraFim}${durLabel}`;
 });
 
 document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
@@ -920,23 +911,18 @@ document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
   const telefone=document.getElementById('res-inp-tel').value.trim();
   const tratamento=document.getElementById('res-inp-tratamento').value.trim();
   const data=document.getElementById('res-inp-data').value;
-  const h_ini=document.getElementById('res-inp-inicio').value;
-  const h_fim=document.getElementById('res-inp-fim').value;
   if(!sala){err.textContent='Selecione uma sala.';return;}
   if(!tipo){err.textContent='Selecione o tipo de cliente (Hóspede ou Passante).';return;}
   if(!nome){err.textContent='Informe o nome do cliente.';return;}
   if(!email){err.textContent='Informe o e-mail.';return;}
+  if(!tratamento){err.textContent='Selecione o tratamento.';return;}
+  if(!_resHoraFim){err.textContent='Tratamento sem duração definida, contate o administrador.';return;}
   if(!data){err.textContent='Informe a data.';return;}
-  if(!h_ini||!h_fim){err.textContent='Informe o horário.';return;}
-  if(calTimeMin(h_fim)<=calTimeMin(h_ini)){err.textContent='Fim deve ser após o início.';return;}
-  if(calTimeMin(h_ini)<CAL_H_START*60||calTimeMin(h_fim)>CAL_H_END*60){
-    err.textContent=`Horário fora do período (${CAL_H_START}:00–${CAL_H_END}:00).`;return;
-  }
   const btn=document.getElementById('btn-res-salvar');
   btn.disabled=true;
   try{
     const res=await api('/api/reservas',{method:'POST',body:JSON.stringify({
-      sala, tipo_cliente: tipo, cliente: nome, apto, email, telefone, tratamento, data, hora_inicio: h_ini, hora_fim: h_fim
+      sala, tipo_cliente: tipo, cliente: nome, apto, email, telefone, tratamento, data, hora_inicio: _resHoraInicio, hora_fim: _resHoraFim
     })});
     if(!res)return;
     const d=await res.json();
