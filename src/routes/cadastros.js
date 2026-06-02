@@ -44,16 +44,16 @@ router.delete('/massagistas/:id', (req, res) => {
 router.get('/tipos-massagem', (_req, res) => res.json({ ok: true, items: listarTiposMassagem() }));
 
 router.post('/tipos-massagem', (req, res) => {
-  const { nome, duracao_min, preco } = req.body || {};
+  const { nome, duracao_min, preco, descricao } = req.body || {};
   if (!nome?.trim()) return res.status(400).json({ ok: false, error: 'Nome obrigatório' });
-  const id = inserirTipoMassagem(nome, duracao_min, preco);
+  const id = inserirTipoMassagem(nome, duracao_min, preco, descricao);
   res.status(201).json({ ok: true, id });
 });
 
 router.put('/tipos-massagem/:id', (req, res) => {
-  const { nome, duracao_min, preco, ativo = 1 } = req.body || {};
+  const { nome, duracao_min, preco, ativo = 1, descricao } = req.body || {};
   if (!nome?.trim()) return res.status(400).json({ ok: false, error: 'Nome obrigatório' });
-  const changes = atualizarTipoMassagem(parseInt(req.params.id), nome, duracao_min, preco, ativo ? 1 : 0);
+  const changes = atualizarTipoMassagem(parseInt(req.params.id), nome, duracao_min, preco, ativo ? 1 : 0, descricao);
   if (!changes) return res.status(404).json({ ok: false, error: 'Não encontrado' });
   res.json({ ok: true });
 });

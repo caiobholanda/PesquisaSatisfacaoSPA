@@ -1157,18 +1157,29 @@
       <div class="mgmt-list-card">
         <div class="mgmt-list-card-header">
           <span class="mgmt-list-card-title">Serviços cadastrados</span>
-          <span class="mgmt-list-card-count" id="count-tipos"></span>
+          <div class="mgmt-tabs" id="tabs-tipos">
+            <button class="mgmt-tab active" data-tab="ativos">Ativos</button>
+            <button class="mgmt-tab" data-tab="inativos">Inativos</button>
+          </div>
           <button class="btn btn-gold btn-sm" id="btn-toggle-form-tipo">+ Novo</button>
         </div>
         <div id="form-tipo-wrap" style="display:none;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface2)">
-          <div class="mgmt-form-fields" style="flex-direction:row;align-items:flex-end;gap:0.75rem;flex-wrap:wrap">
-            <input type="text" id="inp-t-nome" placeholder="Nome do serviço" style="flex:2;min-width:140px">
-            <input type="number" id="inp-t-duracao" placeholder="Minutos" min="1" style="flex:1;min-width:80px">
-            <input type="number" id="inp-t-preco" placeholder="Preço R$" min="0" step="0.01" style="flex:1;min-width:90px">
-            <button class="btn btn-gold" id="btn-add-tipo">Adicionar</button>
-            <button class="btn btn-outline" id="btn-cancel-form-tipo">Cancelar</button>
+          <div class="mgmt-form-fields" style="gap:0.625rem">
+            <div style="display:flex;gap:0.625rem;flex-wrap:wrap;align-items:flex-end">
+              <input type="text" id="inp-t-nome" placeholder="Nome do serviço" style="flex:2;min-width:140px">
+              <input type="number" id="inp-t-duracao" placeholder="Minutos" min="1" style="flex:0 0 90px">
+              <input type="number" id="inp-t-preco" placeholder="Preço R$" min="0" step="0.01" style="flex:0 0 100px">
+            </div>
+            <div style="display:flex;gap:0.625rem;align-items:flex-end">
+              <input type="text" id="inp-t-descricao" placeholder="Descrição (opcional)" style="flex:1">
+              <button class="btn btn-gold" id="btn-add-tipo">Adicionar</button>
+              <button class="btn btn-outline" id="btn-cancel-form-tipo">Cancelar</button>
+            </div>
           </div>
           <div class="mgmt-err" id="err-tipo" style="margin-top:.5rem"></div>
+        </div>
+        <div class="mgmt-search">
+          <input type="text" id="search-tipos" placeholder="Buscar por nome…">
         </div>
         <div id="list-tipos">
           <div class="mgmt-empty">Nenhum tipo de tratamento cadastrado.</div>

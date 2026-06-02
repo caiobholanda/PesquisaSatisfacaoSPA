@@ -390,23 +390,64 @@ window.toggleMassagista = async (id, nome, ativoAtual) => {
   if (res) loadMassagistas();
 };
 
-// ── Tipos de Massagem ──
+// ── Tipos de Tratamento ──
+let _tabTipos = 'ativos';
+let _tipos = [];
+
+document.querySelectorAll('#tabs-tipos .mgmt-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    _tabTipos = btn.dataset.tab;
+    document.querySelectorAll('#tabs-tipos .mgmt-tab').forEach(b => b.classList.toggle('active', b === btn));
+    renderTipos();
+  });
+});
+
+document.getElementById('search-tipos').addEventListener('input', renderTipos);
+
 async function loadTipos() {
   const res = await api('/api/tipos-massagem');
   if (!res) return;
   const d = await res.json();
+  _tipos = d.items;
+  renderTipos();
+}
+
+function renderTipos() {
   const el = document.getElementById('list-tipos');
-  const cnt = document.getElementById('count-tipos');
-  if (cnt) cnt.textContent = d.items.length ? d.items.length + (d.items.length === 1 ? ' registro' : ' registros') : '';
-  if (!d.items.length) { el.innerHTML = '<div class="mgmt-empty">Nenhum tipo cadastrado.</div>'; return; }
-  el.innerHTML = '<div class="mgmt-list">' + d.items.map(t => `
+  const busca = (document.getElementById('search-tipos').value || '').toLowerCase().trim();
+
+  const ativos = _tipos.filter(t => t.ativo);
+  const inativos = _tipos.filter(t => !t.ativo);
+
+  const tabA = document.querySelector('#tabs-tipos [data-tab="ativos"]');
+  const tabI = document.querySelector('#tabs-tipos [data-tab="inativos"]');
+  if (tabA) tabA.textContent = `Ativos (${ativos.length})`;
+  if (tabI) tabI.textContent = `Inativos (${inativos.length})`;
+
+  let filtered = _tabTipos === 'ativos' ? ativos : inativos;
+  if (busca) filtered = filtered.filter(t => t.nome.toLowerCase().includes(busca));
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="mgmt-empty">${busca ? 'Nenhum resultado encontrado.' : _tabTipos === 'ativos' ? 'Nenhum tratamento ativo.' : 'Nenhum tratamento inativo.'}</div>`;
+    return;
+  }
+
+  el.innerHTML = '<div class="mgmt-list">' + filtered.map(t => {
+    const meta = [t.duracao_min ? t.duracao_min + 'min' : null, t.preco ? 'R$' + Number(t.preco).toFixed(2) : null].filter(Boolean).join(' · ');
+    const nomeSafe = t.nome.replace(/'/g, "\\'");
+    const descSafe = (t.descricao || '').replace(/'/g, "\\'");
+    return `
     <div class="mgmt-item ${t.ativo ? '' : 'mgmt-item-inativo'}">
-      <span class="mgmt-item-nome">${t.nome}</span>
-      <span class="mgmt-item-meta">${t.duracao_min ? t.duracao_min + 'min' : '—'}${t.preco ? ' · R$' + Number(t.preco).toFixed(2) : ''}</span>
-      ${t.ativo ? '' : '<span class="mgmt-item-meta">inativo</span>'}
-      <button class="btn btn-outline btn-sm" onclick="editTipo(${t.id},'${t.nome.replace(/'/g,"\\'")}',${t.duracao_min||'null'},${t.preco||'null'},${t.ativo})">Editar</button>
+      <div style="flex:1;min-width:0">
+        <div class="mgmt-item-nome">${t.nome}</div>
+        ${t.descricao ? `<div class="mgmt-item-meta" style="margin-top:2px">${t.descricao}</div>` : ''}
+      </div>
+      ${meta ? `<span class="mgmt-item-meta">${meta}</span>` : ''}
+      <button class="btn btn-outline btn-sm" onclick="editTipo(${t.id},'${nomeSafe}',${t.duracao_min || 'null'},${t.preco || 'null'},${t.ativo},'${descSafe}')">Editar</button>
+      <button class="btn ${t.ativo ? 'btn-outline' : 'btn-gold'} btn-sm" onclick="toggleTipo(${t.id},'${nomeSafe}',${t.ativo})">${t.ativo ? 'Desativar' : 'Ativar'}</button>
       <button class="btn btn-danger btn-sm" onclick="delTipo(${t.id})">✕</button>
-    </div>`).join('') + '</div>';
+    </div>`;
+  }).join('') + '</div>';
 }
 
 function toggleFormTipo(show) {
@@ -417,6 +458,7 @@ function toggleFormTipo(show) {
     document.getElementById('inp-t-nome').value = '';
     document.getElementById('inp-t-duracao').value = '';
     document.getElementById('inp-t-preco').value = '';
+    document.getElementById('inp-t-descricao').value = '';
     document.getElementById('err-tipo').textContent = '';
   }
 }
@@ -432,10 +474,11 @@ document.getElementById('btn-add-tipo').addEventListener('click', async () => {
   const nome = document.getElementById('inp-t-nome').value.trim();
   const duracao_min = parseInt(document.getElementById('inp-t-duracao').value) || null;
   const preco = parseFloat(document.getElementById('inp-t-preco').value) || null;
+  const descricao = document.getElementById('inp-t-descricao').value.trim() || null;
   const err = document.getElementById('err-tipo');
   err.textContent = '';
   if (!nome) { err.textContent = 'Informe o nome.'; return; }
-  const res = await api('/api/tipos-massagem', { method: 'POST', body: JSON.stringify({ nome, duracao_min, preco }) });
+  const res = await api('/api/tipos-massagem', { method: 'POST', body: JSON.stringify({ nome, duracao_min, preco, descricao }) });
   if (!res) return;
   const d = await res.json();
   if (!d.ok) { err.textContent = d.error; return; }
@@ -443,15 +486,28 @@ document.getElementById('btn-add-tipo').addEventListener('click', async () => {
   loadTipos();
 });
 
-window.editTipo = async (id, nomeAtual, duracaoAtual, precoAtual, ativoAtual) => {
+window.editTipo = async (id, nomeAtual, duracaoAtual, precoAtual, ativoAtual, descricaoAtual) => {
   const nome = prompt('Nome:', nomeAtual);
   if (nome === null) return;
+  const descricao = prompt('Descrição:', descricaoAtual || '');
+  if (descricao === null) return;
   const dur = prompt('Duração (min):', duracaoAtual || '');
   const preco = prompt('Preço (R$):', precoAtual || '');
-  const ativo = confirm('Tipo ativo?') ? 1 : 0;
   const res = await api(`/api/tipos-massagem/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ nome, duracao_min: parseInt(dur) || null, preco: parseFloat(preco) || null, ativo }),
+    body: JSON.stringify({ nome, duracao_min: parseInt(dur) || null, preco: parseFloat(preco) || null, ativo: ativoAtual, descricao: descricao.trim() || null }),
+  });
+  if (res) loadTipos();
+};
+
+window.toggleTipo = async (id, nome, ativoAtual) => {
+  const novoAtivo = ativoAtual ? 0 : 1;
+  if (!confirm(`${novoAtivo ? 'Ativar' : 'Desativar'} "${nome}"?`)) return;
+  const t = _tipos.find(x => x.id === id);
+  if (!t) return;
+  const res = await api(`/api/tipos-massagem/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ nome: t.nome, duracao_min: t.duracao_min, preco: t.preco, ativo: novoAtivo, descricao: t.descricao }),
   });
   if (res) loadTipos();
 };

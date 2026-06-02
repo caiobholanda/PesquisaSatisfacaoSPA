@@ -63,6 +63,7 @@ export function initDb() {
     CREATE TABLE IF NOT EXISTS tipos_massagem (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
+      descricao TEXT,
       duracao_min INTEGER,
       preco REAL,
       ativo INTEGER NOT NULL DEFAULT 1,
@@ -76,6 +77,9 @@ export function initDb() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration: add descricao column to tipos_massagem if absent
+  try { db.exec(`ALTER TABLE tipos_massagem ADD COLUMN descricao TEXT`); } catch {}
 
   const adminUser = process.env.ADMIN_USER || 'admin';
   const adminPass = process.env.ADMIN_PASS || 'TrocarEmProducao!';
@@ -210,11 +214,11 @@ export function deletarMassagista(id) {
 export function listarTiposMassagem() {
   return getDb().prepare('SELECT * FROM tipos_massagem ORDER BY nome ASC').all();
 }
-export function inserirTipoMassagem(nome, duracao_min, preco) {
-  return getDb().prepare('INSERT INTO tipos_massagem (nome, duracao_min, preco) VALUES (?, ?, ?)').run(nome.trim(), duracao_min || null, preco || null).lastInsertRowid;
+export function inserirTipoMassagem(nome, duracao_min, preco, descricao) {
+  return getDb().prepare('INSERT INTO tipos_massagem (nome, descricao, duracao_min, preco) VALUES (?, ?, ?, ?)').run(nome.trim(), descricao || null, duracao_min || null, preco || null).lastInsertRowid;
 }
-export function atualizarTipoMassagem(id, nome, duracao_min, preco, ativo) {
-  return getDb().prepare('UPDATE tipos_massagem SET nome=?, duracao_min=?, preco=?, ativo=? WHERE id=?').run(nome.trim(), duracao_min || null, preco || null, ativo, id).changes;
+export function atualizarTipoMassagem(id, nome, duracao_min, preco, ativo, descricao) {
+  return getDb().prepare('UPDATE tipos_massagem SET nome=?, descricao=?, duracao_min=?, preco=?, ativo=? WHERE id=?').run(nome.trim(), descricao || null, duracao_min || null, preco || null, ativo, id).changes;
 }
 export function deletarTipoMassagem(id) {
   return getDb().prepare('DELETE FROM tipos_massagem WHERE id=?').run(id).changes;
