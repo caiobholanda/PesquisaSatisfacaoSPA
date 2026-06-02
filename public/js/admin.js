@@ -8,6 +8,14 @@ let _filters = {};
 function token() { return _token || sessionStorage.getItem(TOKEN_KEY); }
 function setToken(t) { _token = t; sessionStorage.setItem(TOKEN_KEY, t); }
 function clearToken() { _token = null; sessionStorage.removeItem(TOKEN_KEY); }
+function tokenValido() {
+  const t = token();
+  if (!t) return false;
+  try {
+    const payload = JSON.parse(atob(t.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch { return false; }
+}
 
 async function api(url, opts = {}) {
   const res = await fetch(url, {
@@ -58,7 +66,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
       body: JSON.stringify({ username, password }),
     });
     const d = await res.json();
-    if (d.ok) { setToken(d.token); showApp(); loadAll(); }
+    if (d.ok) { setToken(d.token); showApp(); }
     else { msg.textContent = d.error || 'Credenciais inválidas'; }
   } catch { msg.textContent = 'Erro de conexão.'; }
   finally { btn.innerHTML = 'Entrar'; btn.disabled = false; }
@@ -303,9 +311,8 @@ function showView(id) {
 
 // ── Init ──
 (function init() {
-  const t = token();
-  if (t) { showApp(); loadAll(); }
-  else { showLogin(); }
+  if (tokenValido()) { showApp(); }
+  else { clearToken(); sessionStorage.removeItem('_vst'); showLogin(); }
 
   const hoje = new Date();
   const d30 = new Date(Date.now() - 30 * 86400000);
