@@ -349,6 +349,20 @@ function renderMassagistas() {
     </div>`).join('') + '</div>';
 }
 
+function toggleFormMassagista(show) {
+  const wrap = document.getElementById('form-massagista-wrap');
+  wrap.style.display = show ? 'block' : 'none';
+  if (show) document.getElementById('inp-m-nome').focus();
+  else { document.getElementById('inp-m-nome').value = ''; document.getElementById('err-massagista').textContent = ''; }
+}
+
+document.getElementById('btn-toggle-form-massagista').addEventListener('click', () => {
+  const open = document.getElementById('form-massagista-wrap').style.display !== 'none';
+  toggleFormMassagista(!open);
+});
+
+document.getElementById('btn-cancel-form-massagista').addEventListener('click', () => toggleFormMassagista(false));
+
 document.getElementById('btn-add-massagista').addEventListener('click', async () => {
   const nome = document.getElementById('inp-m-nome').value.trim();
   const err = document.getElementById('err-massagista');
@@ -358,7 +372,7 @@ document.getElementById('btn-add-massagista').addEventListener('click', async ()
   if (!res) return;
   const d = await res.json();
   if (!d.ok) { err.textContent = d.error; return; }
-  document.getElementById('inp-m-nome').value = '';
+  toggleFormMassagista(false);
   loadMassagistas();
 });
 

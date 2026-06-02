@@ -1116,29 +1116,28 @@
           <p class="page-sub">Cadastro e gestão de profissionais</p>
         </div>
       </div>
-      <div class="mgmt-page-grid">
-        <div class="mgmt-form-card">
-          <div class="mgmt-form-card-title">Adicionar nova</div>
-          <div class="mgmt-form-fields">
-            <input type="text" id="inp-m-nome" placeholder="Nome completo">
-            <button class="btn btn-gold" id="btn-add-massagista" style="justify-content:center">Adicionar</button>
-            <div class="mgmt-err" id="err-massagista"></div>
+      <div class="mgmt-list-card">
+        <div class="mgmt-list-card-header">
+          <span class="mgmt-list-card-title">Profissionais</span>
+          <div class="mgmt-tabs" id="tabs-massagistas">
+            <button class="mgmt-tab active" data-tab="ativas">Ativas</button>
+            <button class="mgmt-tab" data-tab="inativas">Inativas</button>
           </div>
+          <button class="btn btn-gold btn-sm" id="btn-toggle-form-massagista">+ Nova</button>
         </div>
-        <div class="mgmt-list-card">
-          <div class="mgmt-list-card-header">
-            <span class="mgmt-list-card-title">Profissionais</span>
-            <div class="mgmt-tabs" id="tabs-massagistas">
-              <button class="mgmt-tab active" data-tab="ativas">Ativas</button>
-              <button class="mgmt-tab" data-tab="inativas">Inativas</button>
-            </div>
+        <div id="form-massagista-wrap" style="display:none;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface2)">
+          <div class="mgmt-form-fields" style="flex-direction:row;align-items:flex-end;gap:0.75rem">
+            <input type="text" id="inp-m-nome" placeholder="Nome completo" style="flex:1">
+            <button class="btn btn-gold" id="btn-add-massagista">Adicionar</button>
+            <button class="btn btn-outline" id="btn-cancel-form-massagista">Cancelar</button>
           </div>
-          <div class="mgmt-search">
-            <input type="text" id="search-massagistas" placeholder="Buscar por nome…">
-          </div>
-          <div id="list-massagistas">
-            <div class="mgmt-empty">Nenhuma massoterapeuta cadastrada.</div>
-          </div>
+          <div class="mgmt-err" id="err-massagista" style="margin-top:.5rem"></div>
+        </div>
+        <div class="mgmt-search">
+          <input type="text" id="search-massagistas" placeholder="Buscar por nome…">
+        </div>
+        <div id="list-massagistas">
+          <div class="mgmt-empty">Nenhuma massoterapeuta cadastrada.</div>
         </div>
       </div>
     </div>
