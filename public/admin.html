@@ -1154,27 +1154,24 @@
           <p class="page-sub">Serviços e modalidades oferecidos</p>
         </div>
       </div>
-      <div class="mgmt-page-grid">
-        <div class="mgmt-form-card">
-          <div class="mgmt-form-card-title">Adicionar novo</div>
-          <div class="mgmt-form-fields">
-            <input type="text" id="inp-t-nome" placeholder="Nome do serviço">
-            <div class="mgmt-form-row">
-              <input type="number" id="inp-t-duracao" placeholder="Minutos" min="1">
-              <input type="number" id="inp-t-preco" placeholder="Preço R$" min="0" step="0.01">
-            </div>
-            <button class="btn btn-gold" id="btn-add-tipo" style="justify-content:center">Adicionar</button>
-            <div class="mgmt-err" id="err-tipo"></div>
-          </div>
+      <div class="mgmt-list-card">
+        <div class="mgmt-list-card-header">
+          <span class="mgmt-list-card-title">Serviços cadastrados</span>
+          <span class="mgmt-list-card-count" id="count-tipos"></span>
+          <button class="btn btn-gold btn-sm" id="btn-toggle-form-tipo">+ Novo</button>
         </div>
-        <div class="mgmt-list-card">
-          <div class="mgmt-list-card-header">
-            <span class="mgmt-list-card-title">Serviços cadastrados</span>
-            <span class="mgmt-list-card-count" id="count-tipos"></span>
+        <div id="form-tipo-wrap" style="display:none;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface2)">
+          <div class="mgmt-form-fields" style="flex-direction:row;align-items:flex-end;gap:0.75rem;flex-wrap:wrap">
+            <input type="text" id="inp-t-nome" placeholder="Nome do serviço" style="flex:2;min-width:140px">
+            <input type="number" id="inp-t-duracao" placeholder="Minutos" min="1" style="flex:1;min-width:80px">
+            <input type="number" id="inp-t-preco" placeholder="Preço R$" min="0" step="0.01" style="flex:1;min-width:90px">
+            <button class="btn btn-gold" id="btn-add-tipo">Adicionar</button>
+            <button class="btn btn-outline" id="btn-cancel-form-tipo">Cancelar</button>
           </div>
-          <div id="list-tipos">
-            <div class="mgmt-empty">Nenhum tipo de tratamento cadastrado.</div>
-          </div>
+          <div class="mgmt-err" id="err-tipo" style="margin-top:.5rem"></div>
+        </div>
+        <div id="list-tipos">
+          <div class="mgmt-empty">Nenhum tipo de tratamento cadastrado.</div>
         </div>
       </div>
     </div>

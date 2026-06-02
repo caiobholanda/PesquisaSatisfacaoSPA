@@ -409,6 +409,25 @@ async function loadTipos() {
     </div>`).join('') + '</div>';
 }
 
+function toggleFormTipo(show) {
+  const wrap = document.getElementById('form-tipo-wrap');
+  wrap.style.display = show ? 'block' : 'none';
+  if (show) document.getElementById('inp-t-nome').focus();
+  else {
+    document.getElementById('inp-t-nome').value = '';
+    document.getElementById('inp-t-duracao').value = '';
+    document.getElementById('inp-t-preco').value = '';
+    document.getElementById('err-tipo').textContent = '';
+  }
+}
+
+document.getElementById('btn-toggle-form-tipo').addEventListener('click', () => {
+  const open = document.getElementById('form-tipo-wrap').style.display !== 'none';
+  toggleFormTipo(!open);
+});
+
+document.getElementById('btn-cancel-form-tipo').addEventListener('click', () => toggleFormTipo(false));
+
 document.getElementById('btn-add-tipo').addEventListener('click', async () => {
   const nome = document.getElementById('inp-t-nome').value.trim();
   const duracao_min = parseInt(document.getElementById('inp-t-duracao').value) || null;
@@ -420,9 +439,7 @@ document.getElementById('btn-add-tipo').addEventListener('click', async () => {
   if (!res) return;
   const d = await res.json();
   if (!d.ok) { err.textContent = d.error; return; }
-  document.getElementById('inp-t-nome').value = '';
-  document.getElementById('inp-t-duracao').value = '';
-  document.getElementById('inp-t-preco').value = '';
+  toggleFormTipo(false);
   loadTipos();
 });
 
