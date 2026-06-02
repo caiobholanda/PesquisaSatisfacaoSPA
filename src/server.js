@@ -29,7 +29,8 @@ app.get('/api/massagistas-ativas', (_req, res) => {
 });
 
 app.get('/api/tipos-massagem-ativos', (_req, res) => {
-  res.json({ nomes: listarTiposMassagem().filter(t => t.ativo).map(t => t.nome) });
+  const ativos = listarTiposMassagem().filter(t => t.ativo);
+  res.json({ nomes: ativos.map(t => t.nome), items: ativos.map(t => ({ nome: t.nome, duracao_min: t.duracao_min })) });
 });
 
 app.get('/api/health', (_req, res) => {

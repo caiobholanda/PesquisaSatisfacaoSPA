@@ -713,6 +713,19 @@ let _calDiaSel = null;
 let _reservas  = [];
 let _resSala   = null;
 let _resTipo   = null;
+let _tratamentos = []; // [{nome, duracao_min}]
+
+async function loadTratamentosModal() {
+  if (_tratamentos.length) return;
+  try {
+    const r = await fetch('/api/tipos-massagem-ativos');
+    const d = await r.json();
+    _tratamentos = d.items || [];
+    const sel = document.getElementById('res-inp-tratamento');
+    sel.innerHTML = '<option value="">— Selecione —</option>' +
+      _tratamentos.map(t => `<option value="${t.nome}" data-dur="${t.duracao_min||''}">${t.nome}${t.duracao_min?' ('+t.duracao_min+' min)':''}</option>`).join('');
+  } catch {}
+}
 
 const DIAS_PT  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MESES_PT = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -849,7 +862,8 @@ function calOpenModal(salaId, data, hora) {
     document.getElementById('res-inp-fim').value=calMinTime(Math.min(sm+60, CAL_H_END*60));
   }
   document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',+b.dataset.sala===_resSala));
-  setTimeout(()=>document.getElementById('res-inp-cliente').focus(),50);
+  loadTratamentosModal();
+  setTimeout(()=>document.getElementById('res-inp-nome').focus(),50);
 }
 window.calOpenModal=calOpenModal;
 
@@ -874,6 +888,25 @@ document.querySelectorAll('.res-room-btn').forEach(btn=>{
 
 document.querySelectorAll('.res-tipo-btn').forEach(btn=>{
   btn.addEventListener('click',()=>calSetTipo(btn.dataset.tipo));
+});
+
+document.getElementById('res-inp-tratamento').addEventListener('change', function() {
+  const opt = this.options[this.selectedIndex];
+  const dur = parseInt(opt?.dataset?.dur || '0', 10);
+  if (!dur) return;
+  const ini = document.getElementById('res-inp-inicio').value;
+  if (!ini) return;
+  const fim = calMinTime(Math.min(calTimeMin(ini) + dur, CAL_H_END * 60));
+  document.getElementById('res-inp-fim').value = fim;
+});
+
+document.getElementById('res-inp-inicio').addEventListener('change', function() {
+  const sel = document.getElementById('res-inp-tratamento');
+  const opt = sel.options[sel.selectedIndex];
+  const dur = parseInt(opt?.dataset?.dur || '0', 10);
+  if (!dur) return;
+  const fim = calMinTime(Math.min(calTimeMin(this.value) + dur, CAL_H_END * 60));
+  document.getElementById('res-inp-fim').value = fim;
 });
 
 document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
