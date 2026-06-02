@@ -59,7 +59,16 @@
     .form-intro.en { font-size: 13px; color: #6B6B6B; }
 
     /* progress */
-    .progress-bar { position: sticky; top: 0; z-index: 30; background: #F5F0E6; padding: 16px 24px 12px; }
+    .progress-bar { position: sticky; top: 0; z-index: 30; background: #F5F0E6; padding: 10px 24px 12px; }
+    .progress-top { max-width: 720px; margin: 0 auto 8px; display: flex; align-items: center; }
+    .btn-voltar {
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase; color: #9B9B9B;
+      display: flex; align-items: center; gap: 6px;
+      transition: color 0.2s;
+    }
+    .btn-voltar:hover { color: var(--gold); }
     .progress-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 8px; }
     .trace { height: 2px; flex: 1; background: #E2D7C2; overflow: hidden; }
     .trace .tf { height: 100%; background: var(--ui); width: 0; transition: width 0.4s cubic-bezier(0.16,1,0.3,1); }
@@ -518,7 +527,7 @@
       );
     }
 
-    function FormScreen({ visible, onSubmit }) {
+    function FormScreen({ visible, onSubmit, onBack }) {
       const [fields, setFields] = useState({
         nome: '', apto: '', email: '', tel: '', data: new Date().toISOString().slice(0, 10), tratamento: '', massoterapeuta: '',
       });
@@ -636,6 +645,15 @@
       return (
         <div className="screen" style={{ opacity: visible ? 1 : 0 }}>
           <div className="progress-bar">
+            <div className="progress-top">
+              <button className="btn-voltar" onClick={onBack}>
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+                  <path d="M5 1L1 5L5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <line x1="1" y1="5" x2="13" y2="5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Voltar
+              </button>
+            </div>
             <div className="progress-inner">
               {fills.map((f, i) => (
                 <div key={i} className="trace"><div className="tf" style={{ width: f * 100 + '%' }}></div></div>
@@ -820,7 +838,7 @@
       return (
         <div className="app-root">
           {screen === 'welcome' && <WelcomeScreen visible={visible} onStart={() => go('form')} />}
-          {screen === 'form' && <FormScreen visible={visible} onSubmit={() => go('confirm')} />}
+          {screen === 'form' && <FormScreen visible={visible} onSubmit={() => go('confirm')} onBack={() => go('welcome')} />}
           {screen === 'confirm' && <ConfirmationScreen visible={visible} onRestart={() => go('welcome')} />}
         </div>
       );
