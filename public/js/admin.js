@@ -1140,23 +1140,49 @@ function _atualizarComboLinhaPreco() {
   wrap.innerHTML = html;
 }
 
-// Detecta conflito local antes de bater no servidor
-function calDetectarConflito(sala, data, horaInicio, horaFim, excluirId) {
-  return _reservas.find(r =>
+// Detecta conflito local (sala ou profissional)
+function calDetectarConflito(sala, massagistaId, data, horaInicio, horaFim, excluirId) {
+  // Sala primeiro
+  const conflitoSala = _reservas.find(r =>
     r.sala === sala &&
     r.data === data &&
     r.id !== excluirId &&
     !(r.hora_fim <= horaInicio || r.hora_inicio >= horaFim)
   );
+  if (conflitoSala) return { tipo: 'sala', reserva: conflitoSala };
+  // Profissional
+  if (massagistaId) {
+    const conflitoProf = _reservas.find(r =>
+      r.massagista_id === massagistaId &&
+      r.data === data &&
+      r.id !== excluirId &&
+      !(r.hora_fim <= horaInicio || r.hora_inicio >= horaFim)
+    );
+    if (conflitoProf) return { tipo: 'massagista', reserva: conflitoProf };
+  }
+  return null;
 }
 
-function calMostrarConflito(conflito) {
-  const sala = CAL_ROOMS.find(r => r.id === conflito.sala);
+function calMostrarConflito(info) {
+  const tipo = info.tipo;
+  const c = info.reserva;
+  const sala = CAL_ROOMS.find(r => r.id === c.sala);
+  const prof = _massagistasModal.find(m => m.id === c.massagista_id);
+  const tituloEl = document.querySelector('.conflito-title');
+  const msgEl = document.querySelector('.conflito-msg');
+  if (tipo === 'massagista') {
+    tituloEl.textContent = 'Massoterapeuta ocupada';
+    msgEl.textContent = 'Esta profissional já está em outro atendimento neste horário. Escolha outro horário ou outra profissional.';
+  } else {
+    tituloEl.textContent = 'Sala indisponível';
+    msgEl.textContent = 'Esta sala já está reservada neste horário. Não é possível ter duas sessões na mesma sala ao mesmo tempo.';
+  }
   document.getElementById('conflito-info').innerHTML = `
-    <div class="conflito-card-row"><span class="conflito-card-label">Sala</span><span class="conflito-card-val">${sala ? sala.nome : 'Sala ' + conflito.sala}</span></div>
-    <div class="conflito-card-row"><span class="conflito-card-label">Data</span><span class="conflito-card-val">${calFmtData(conflito.data)}</span></div>
-    <div class="conflito-card-row"><span class="conflito-card-label">Horário ocupado</span><span class="conflito-card-val">${conflito.hora_inicio} – ${conflito.hora_fim}</span></div>
-    <div class="conflito-card-row"><span class="conflito-card-label">Cliente</span><span class="conflito-card-val" style="font-family:inherit">${conflito.cliente}</span></div>
+    ${tipo === 'massagista' && prof ? `<div class="conflito-card-row"><span class="conflito-card-label">Profissional</span><span class="conflito-card-val" style="font-family:inherit">${prof.nome}</span></div>` : ''}
+    <div class="conflito-card-row"><span class="conflito-card-label">Sala</span><span class="conflito-card-val">${sala ? sala.nome : 'Sala ' + c.sala}</span></div>
+    <div class="conflito-card-row"><span class="conflito-card-label">Data</span><span class="conflito-card-val">${calFmtData(c.data)}</span></div>
+    <div class="conflito-card-row"><span class="conflito-card-label">Horário ocupado</span><span class="conflito-card-val">${c.hora_inicio} – ${c.hora_fim}</span></div>
+    <div class="conflito-card-row"><span class="conflito-card-label">Cliente</span><span class="conflito-card-val" style="font-family:inherit">${c.cliente}</span></div>
   `;
   document.getElementById('conflito-overlay').classList.add('aberto');
 }
