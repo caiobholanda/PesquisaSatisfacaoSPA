@@ -1345,7 +1345,7 @@ function calVerDetalhes(id) {
     <div class="resdet-section">
       <div class="resdet-section-title">Registro</div>
       <div class="resdet-row"><span class="resdet-label">Reserva #</span><span class="resdet-value mono">${r.id}</span></div>
-      <div class="resdet-row"><span class="resdet-label">Criado em</span>${emptyMono(r.criado_em)}</div>
+      <div class="resdet-row"><span class="resdet-label">Criado em</span>${r.criado_em ? `<span class="resdet-value">${fmtDataHoraBR(r.criado_em)}</span>` : '<span class="resdet-value empty">não informado</span>'}</div>
     </div>
   `;
 
