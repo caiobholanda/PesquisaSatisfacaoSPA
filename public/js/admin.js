@@ -294,13 +294,18 @@ async function loadTable() {
 window.goPage = (o) => { _offset = o; loadTable(); };
 
 // ── Drawer ──
-let _allItems = [];
 async function openDrawer(id) {
-  const res = await api(`/api/feedback?limit=9999&offset=0`);
+  const drawerEl = document.getElementById('drawer');
+  const content  = document.getElementById('drawer-content');
+  content.innerHTML = '<div class="detail-section"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:75%"></div></div>';
+  drawerEl.classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+
+  const res = await api(`/api/feedback/${id}`);
   if (!res) return;
   const d = await res.json();
-  const r = d.items.find(i => i.id === id);
-  if (!r) return;
+  const r = d.item;
+  if (!r) { content.innerHTML = '<div class="detail-section" style="color:var(--danger)">Avaliação não encontrada.</div>'; return; }
 
   function nota(v) {
     if (!v) return '<span style="color:var(--muted)">—</span>';
@@ -308,9 +313,9 @@ async function openDrawer(id) {
     const label = { otimo:'Ótimo', bom:'Bom', regular:'Regular', ruim:'Ruim' }[v] || v;
     return `<span class="nota-pill ${cls}">${label}</span>`;
   }
-  function row(k, v) { return `<div class="detail-row"><span class="detail-key">${k}</span><span>${v || '<span style="color:var(--muted)">—</span>'}</span></div>`; }
+  function row(k, v) { return `<div class="detail-row"><span class="detail-key">${escHtml(k)}</span><span>${v ? escHtml(v) : '<span style="color:var(--muted)">—</span>'}</span></div>`; }
 
-  document.getElementById('drawer-content').innerHTML = `
+  content.innerHTML = `
     <div class="detail-section">
       <h3>Identificação</h3>
       ${row('Nome', r.nome)} ${row('E-mail', r.email)} ${row('Apto', r.apto)}
@@ -328,22 +333,19 @@ async function openDrawer(id) {
       <div class="detail-row"><span class="detail-key">Explicação</span>${nota(r.servicos_explicacao)}</div>
       <div class="detail-row"><span class="detail-key">Atitude</span>${nota(r.servicos_atitude)}</div>
       <div class="detail-row"><span class="detail-key">Técnica</span>${nota(r.servicos_tecnica)}</div>
-      ${r.servicos_comentario ? `<div class="detail-row"><span class="detail-key">Comentário</span><span style="font-style:italic;color:var(--muted)">"${r.servicos_comentario}"</span></div>` : ''}
+      ${r.servicos_comentario ? `<div class="detail-row"><span class="detail-key">Comentário</span><span style="font-style:italic;color:var(--muted)">"${escHtml(r.servicos_comentario)}"</span></div>` : ''}
     </div>
     <div class="detail-section">
       <h3>Instalações</h3>
       <div class="detail-row"><span class="detail-key">Conforto</span>${nota(r.instalacoes_conforto)}</div>
       <div class="detail-row"><span class="detail-key">Organização</span>${nota(r.instalacoes_organizacao)}</div>
       <div class="detail-row"><span class="detail-key">Conveniência</span>${nota(r.instalacoes_conveniencia)}</div>
-      ${r.instalacoes_comentario ? `<div class="detail-row"><span class="detail-key">Comentário</span><span style="font-style:italic;color:var(--muted)">"${r.instalacoes_comentario}"</span></div>` : ''}
+      ${r.instalacoes_comentario ? `<div class="detail-row"><span class="detail-key">Comentário</span><span style="font-style:italic;color:var(--muted)">"${escHtml(r.instalacoes_comentario)}"</span></div>` : ''}
     </div>
     <div class="detail-section">
       <h3>Recomendação</h3>
       ${row('Recomenda?', r.recomenda)} ${row('Para quem', r.recomenda_qual)} ${row('Por quê', r.recomenda_porque)}
     </div>`;
-
-  document.getElementById('drawer').classList.add('open');
-  document.getElementById('drawer-overlay').classList.add('open');
 }
 window.openDrawer = openDrawer;
 
