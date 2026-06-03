@@ -116,4 +116,13 @@ router.get('/stats', requireAuth, (req, res) => {
   return res.json({ ok: true, ...statsFeedback({ from, to }) });
 });
 
+// GET /api/feedback/item/:id — protegido (após /stats para não conflitar)
+router.get('/item/:id', requireAuth, (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ ok: false, error: 'ID inválido' });
+  const item = getFeedbackById(id);
+  if (!item) return res.status(404).json({ ok: false, error: 'Não encontrado' });
+  res.json({ ok: true, item });
+});
+
 export default router;
