@@ -1355,6 +1355,11 @@ document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
     if (!linha) { err.textContent='Selecione a linha do tratamento facial (Immortelle ou Source Réotier).'; return; }
   }
 
+  // Massoterapeuta obrigatória
+  const selMass = document.getElementById('res-inp-massagista');
+  const massagistaId = selMass?.value ? +selMass.value : null;
+  if (!massagistaId) { err.textContent = 'Selecione a massoterapeuta que vai atender.'; return; }
+
   // Verificação local de conflito antes de bater no servidor
   const conflito = calDetectarConflito(sala, data, horaInicio, _resHoraFim);
   if (conflito) {
