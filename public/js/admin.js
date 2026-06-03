@@ -1284,7 +1284,9 @@ document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
   btn.disabled=true;
   try{
     const res=await api('/api/reservas',{method:'POST',body:JSON.stringify({
-      sala, tipo_cliente: tipo, cliente: nome, apto, email, telefone, tratamento, data, hora_inicio: horaInicio, hora_fim: _resHoraFim
+      sala, tipo_cliente: tipo, cliente: nome, apto, email, telefone, tratamento, data,
+      hora_inicio: horaInicio, hora_fim: _resHoraFim,
+      linha, tipo_massagem_id: tipoMassagemId
     })});
     if(!res)return;
     const d=await res.json();
