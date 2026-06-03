@@ -105,12 +105,24 @@ export function initDb() {
   ]) {
     try { db.exec(`ALTER TABLE tipos_massagem ADD COLUMN ${col}`); } catch {}
   }
+  // Migration: add enriched fields to massagistas
+  for (const col of [
+    'matricula TEXT',
+    'especialidade_original TEXT',
+    'funcao TEXT',
+    'vinculo TEXT',
+    `bilingue INTEGER NOT NULL DEFAULT 0`,
+    'disponibilidade TEXT',
+  ]) {
+    try { db.exec(`ALTER TABLE massagistas ADD COLUMN ${col}`); } catch {}
+  }
   // Migration: add enriched fields to reservas if absent
-  for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER']) {
+  for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER', 'massagista_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
   }
 
   seedTratamentosGranSpa();
+  seedMassoterapeutasGranSpa();
 
   const adminUser = process.env.ADMIN_USER || 'admin';
   const adminPass = process.env.ADMIN_PASS || 'TrocarEmProducao!';
