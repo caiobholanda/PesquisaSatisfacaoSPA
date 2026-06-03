@@ -358,6 +358,9 @@ function showView(id) {
   const cur = JSON.parse(sessionStorage.getItem('_vst') || '{}');
   sessionStorage.setItem('_vst', JSON.stringify({ ...cur, view: id }));
   if (id === 'view-main') iniciarPollingStats(); else pararPollingStats();
+  // Mostra/esconde botão "Início" no header
+  const homeBtn = document.getElementById('btn-header-home');
+  if (homeBtn) homeBtn.style.display = (id === 'view-main') ? 'none' : '';
 }
 
 // ── Init ──
