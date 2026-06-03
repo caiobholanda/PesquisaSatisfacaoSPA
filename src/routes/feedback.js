@@ -6,16 +6,23 @@ const router = Router();
 
 // Rate limit em memória: 5 submissões / 10 min por IP
 const ratemap = new Map();
+const RATE_WINDOW = 10 * 60 * 1000;
+const RATE_MAX = 5;
+// Limpa entradas expiradas a cada 30 min para evitar leak de memória
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ratemap) {
+    if (now - entry.start > RATE_WINDOW * 2) ratemap.delete(ip);
+  }
+}, 30 * 60 * 1000);
 function rateLimit(req, res, next) {
   const ip = req.ip;
   const now = Date.now();
-  const window = 10 * 60 * 1000;
-  const max = 5;
   const entry = ratemap.get(ip) || { count: 0, start: now };
-  if (now - entry.start > window) { entry.count = 0; entry.start = now; }
+  if (now - entry.start > RATE_WINDOW) { entry.count = 0; entry.start = now; }
   entry.count++;
   ratemap.set(ip, entry);
-  if (entry.count > max) return res.status(429).json({ ok: false, error: 'Muitas tentativas. Aguarde e tente novamente.' });
+  if (entry.count > RATE_MAX) return res.status(429).json({ ok: false, error: 'Muitas tentativas. Aguarde e tente novamente.' });
   next();
 }
 
