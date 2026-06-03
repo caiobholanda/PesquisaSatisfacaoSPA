@@ -1020,7 +1020,10 @@ function renderCalWeekPills() {
 }
 
 window.calSelectDay=(ds)=>{
-  const [y,m,day]=ds.split('-').map(Number);
+  if (!ds || typeof ds !== 'string') return;
+  const parts = ds.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return;
+  const [y,m,day] = parts;
   _calDiaSel=new Date(y,m-1,day);
   renderCalWeekPills();
   renderCalDia();
