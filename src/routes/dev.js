@@ -65,18 +65,13 @@ router.post('/seed-demo', (req, res) => {
     return res.status(400).json({ ok: false, error: 'Cadastre massoterapeutas e tipos antes de gerar dados de demo' });
   }
 
-  const hoje = dataHoje();
   let feedbacksInseridos = 0;
-  let reservasInseridas = 0;
 
   db.transaction(() => {
     // 1. Limpa feedbacks anteriores
     db.prepare('DELETE FROM feedback').run();
 
-    // 2. Limpa reservas de hoje
-    db.prepare('DELETE FROM reservas WHERE data = ?').run(hoje);
-
-    // 3. Insere 15 feedbacks com mix de notas
+    // 2. Insere 15 feedbacks com mix de notas
     // Distribuição planejada: 4 superpositivos, 4 positivos, 3 medianos, 2 negativos, 2 mistos
     const perfis = [
       // 4 superpositivos (todos Ótimo, recomenda)
