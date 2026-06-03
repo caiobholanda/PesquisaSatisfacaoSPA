@@ -80,15 +80,6 @@ router.post('/', rateLimit, (req, res) => {
   return res.status(201).json({ ok: true, id });
 });
 
-// GET /api/feedback/:id — protegido
-router.get('/:id', requireAuth, (req, res) => {
-  const id = parseInt(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ ok: false, error: 'ID inválido' });
-  const item = getFeedbackById(id);
-  if (!item) return res.status(404).json({ ok: false, error: 'Não encontrado' });
-  res.json({ ok: true, item });
-});
-
 // GET /api/feedback — protegido
 router.get('/', requireAuth, (req, res) => {
   const { origem, tipo_cliente, from, to, limit = '50', offset = '0', format } = req.query;
