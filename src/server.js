@@ -30,7 +30,25 @@ app.get('/api/massagistas-ativas', (_req, res) => {
 
 app.get('/api/tipos-massagem-ativos', (_req, res) => {
   const ativos = listarTiposMassagem().filter(t => t.ativo);
-  res.json({ nomes: ativos.map(t => t.nome), items: ativos.map(t => ({ nome: t.nome, duracao_min: t.duracao_min })) });
+  // Mapa de id → nome para resolver componentes
+  const nomePorId = Object.fromEntries(ativos.map(t => [t.id, t.nome]));
+  const items = ativos.map(t => {
+    const componentes = t.componentes ? JSON.parse(t.componentes) : null;
+    const linhas = t.linhas ? JSON.parse(t.linhas) : null;
+    return {
+      id: t.id,
+      nome: t.nome,
+      duracao_min: t.duracao_min,
+      preco: t.preco,
+      descricao: t.descricao,
+      tipo: t.tipo || 'individual',
+      categoria: t.categoria,
+      componentes,
+      componentes_nomes: componentes ? componentes.map(cid => nomePorId[cid]).filter(Boolean) : null,
+      linhas,
+    };
+  });
+  res.json({ nomes: ativos.map(t => t.nome), items });
 });
 
 app.get('/api/health', (_req, res) => {
