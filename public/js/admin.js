@@ -384,9 +384,9 @@ document.getElementById('btn-back-tipos').addEventListener('click', () => showVi
 // Botão "Início" no header — atalho direto pra view-main, fica visível só em subpáginas
 document.getElementById('btn-header-home')?.addEventListener('click', () => showView('view-main'));
 
-// Botão de gerar dados de demonstração
+// Botão de gerar dados de demonstração — só pesquisas (reservas continuam manuais)
 document.getElementById('btn-seed-demo')?.addEventListener('click', async () => {
-  const ok = confirm('⚠ Isso vai APAGAR todas as pesquisas atuais + apagar reservas de hoje e gerar:\n\n• 15 respostas fictícias com variação de notas\n• 5 reservas para hoje com tratamentos diferentes\n\nContinuar?');
+  const ok = confirm('⚠ Isso vai APAGAR todas as pesquisas atuais e gerar 15 respostas fictícias com variação de notas.\n\nAs reservas NÃO são afetadas — continuam criadas só pelos admins.\n\nContinuar?');
   if (!ok) return;
   const btn = document.getElementById('btn-seed-demo');
   btn.disabled = true;
@@ -397,7 +397,7 @@ document.getElementById('btn-seed-demo')?.addEventListener('click', async () => 
     if (!res) return;
     const d = await res.json();
     if (!d.ok) { alert('Erro: ' + (d.error || 'falha ao gerar dados')); return; }
-    alert(`✓ Pronto! ${d.feedbacks} pesquisas e ${d.reservas} reservas inseridas.`);
+    alert(`✓ Pronto! ${d.feedbacks} pesquisas inseridas.`);
     loadStats();
     loadAll();
   } catch (e) {
