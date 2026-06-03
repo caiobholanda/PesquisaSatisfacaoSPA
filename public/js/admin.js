@@ -816,7 +816,31 @@ let _resSala       = null;
 let _resTipo       = null;
 let _resHoraInicio = null;
 let _resHoraFim    = null;
-let _tratamentos = []; // [{nome, duracao_min}]
+let _tratamentos = []; // [{nome, duracao_min, ...}]
+let _massagistasModal = []; // cache p/ modal de reserva — [{id, nome, bilingue, vinculo, ...}]
+
+async function loadMassagistasModal() {
+  if (_massagistasModal.length) return;
+  try {
+    const r = await fetch('/api/massagistas-ativas');
+    const d = await r.json();
+    _massagistasModal = d.items || [];
+    _renderMassagistasModal();
+  } catch {}
+}
+
+function _renderMassagistasModal() {
+  const sel = document.getElementById('res-inp-massagista');
+  if (!sel) return;
+  const apenasBilingue = document.getElementById('res-flt-bilingue')?.checked;
+  const lista = apenasBilingue ? _massagistasModal.filter(m => m.bilingue) : _massagistasModal;
+  if (!lista.length) {
+    sel.innerHTML = `<option value="">${apenasBilingue ? 'Nenhuma bilíngue disponível' : '— Sem massoterapeutas cadastradas —'}</option>`;
+    return;
+  }
+  sel.innerHTML = '<option value="">— Selecione —</option>' +
+    lista.map(m => `<option value="${m.id}" data-bilingue="${m.bilingue?1:0}" data-vinculo="${m.vinculo||''}">${m.nome}${m.bilingue?' 🌍':''}${m.vinculo?` · ${m.vinculo}`:''}</option>`).join('');
+}
 
 async function loadTratamentosModal() {
   if (_tratamentos.length) return;
