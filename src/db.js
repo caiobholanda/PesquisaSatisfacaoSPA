@@ -91,7 +91,10 @@ export function initDb() {
       hora_fim TEXT NOT NULL,
       criado_em TEXT NOT NULL DEFAULT (datetime('now'))
     );
-    CREATE INDEX IF NOT EXISTS idx_reservas_data ON reservas(data);
+    CREATE INDEX IF NOT EXISTS idx_reservas_data         ON reservas(data);
+    CREATE INDEX IF NOT EXISTS idx_reservas_sala_data     ON reservas(sala, data);
+    CREATE INDEX IF NOT EXISTS idx_reservas_massagista    ON reservas(massagista_id, data);
+    CREATE INDEX IF NOT EXISTS idx_feedback_massoterapeuta ON feedback(nome_massoterapeuta);
   `);
 
   // Migration: add descricao column to tipos_massagem if absent
