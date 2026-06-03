@@ -1478,3 +1478,121 @@ document.getElementById('btn-week-next').addEventListener('click',()=>{_calWeekO
 document.getElementById('btn-week-hoje').addEventListener('click',()=>{_calWeekOffset=0;_calDiaSel=null;loadReservas();});
 document.getElementById('btn-open-reservas').addEventListener('click',()=>{showView('view-reservas');loadReservas();});
 document.getElementById('btn-back-reservas').addEventListener('click',()=>showView('view-main'));
+
+document.getElementById('btn-open-historico-clientes').addEventListener('click',()=>{showView('view-historico-clientes');loadHistoricoClientes();});
+document.getElementById('btn-back-historico-clientes').addEventListener('click',()=>showView('view-main'));
+document.getElementById('btn-hc-filtrar').addEventListener('click',()=>loadHistoricoClientes());
+document.getElementById('btn-hc-limpar').addEventListener('click',()=>{
+  document.getElementById('hc-from').value='';
+  document.getElementById('hc-to').value='';
+  document.getElementById('hc-sala').value='';
+  document.getElementById('hc-busca').value='';
+  loadHistoricoClientes();
+});
+document.getElementById('hc-busca').addEventListener('keydown', e=>{ if(e.key==='Enter') loadHistoricoClientes(); });
+document.getElementById('btn-exportar-historico').addEventListener('click', exportarHistoricoCSV);
+
+let _hcPage = 0;
+const _hcLimit = 50;
+
+const SALA_NOME = { 1: 'Sala 1 · Serenity', 2: 'Sala 2 · Tranquility', 3: 'Sala 3 · Harmony' };
+const TIPO_CLIENTE_LABEL = { hospede: 'Hóspede', passante: 'Passante' };
+
+function _hcParams(off=0) {
+  const from  = document.getElementById('hc-from').value || '';
+  const to    = document.getElementById('hc-to').value || '';
+  const sala  = document.getElementById('hc-sala').value || '';
+  const busca = document.getElementById('hc-busca').value.trim() || '';
+  const p = new URLSearchParams({ limit: _hcLimit, offset: off });
+  if (from)  p.set('from',  from);
+  if (to)    p.set('to',    to);
+  if (sala)  p.set('sala',  sala);
+  if (busca) p.set('busca', busca);
+  return p.toString();
+}
+
+async function loadHistoricoClientes(page=0) {
+  _hcPage = page;
+  const body   = document.getElementById('hc-body');
+  const empty  = document.getElementById('hc-empty');
+  const count  = document.getElementById('hc-count');
+  const pag    = document.getElementById('hc-pagination');
+  body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted)">Carregando…</td></tr>';
+  empty.style.display = 'none';
+  pag.innerHTML = '';
+
+  const r = await fetch(`/api/reservas/historico?${_hcParams(page * _hcLimit)}`);
+  const d = await r.json();
+  if (!d.ok) { body.innerHTML=''; empty.textContent='Erro ao carregar dados.'; empty.style.display='block'; return; }
+
+  const { total, items } = d;
+  count.textContent = `${total} atendimento${total !== 1 ? 's' : ''}`;
+
+  if (!items.length) {
+    body.innerHTML = '';
+    empty.textContent = 'Nenhum atendimento encontrado.';
+    empty.style.display = 'block';
+    return;
+  }
+
+  const fmt = iso => {
+    if (!iso) return '—';
+    const [y,m,day] = iso.split('-');
+    return `${day}/${m}/${y}`;
+  };
+
+  body.innerHTML = items.map(it => {
+    const contato = [it.apto ? `Apto ${it.apto}` : '', it.telefone || ''].filter(Boolean).join(' · ') || it.email || '—';
+    const tratamento = it.tipo_massagem_nome || it.tratamento || '—';
+    const massoterapeuta = it.massoterapeuta_nome || '—';
+    const tipoLabel = TIPO_CLIENTE_LABEL[it.tipo_cliente] || it.tipo_cliente || '—';
+    const salaLabel = SALA_NOME[it.sala] || `Sala ${it.sala}`;
+    return `<tr>
+      <td>${fmt(it.data)}</td>
+      <td style="font-family:var(--mono);font-size:.82rem">${it.hora_inicio} – ${it.hora_fim}</td>
+      <td>
+        <div style="font-weight:500">${it.cliente}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${it.email || ''}</div>
+      </td>
+      <td><span class="badge-tipo-${it.tipo_cliente || 'outro'}">${tipoLabel}</span></td>
+      <td style="font-size:.82rem;color:var(--muted2)">${contato}</td>
+      <td style="font-size:.82rem">${salaLabel}</td>
+      <td style="font-size:.82rem">${tratamento}</td>
+      <td style="font-size:.82rem">${massoterapeuta}</td>
+    </tr>`;
+  }).join('');
+
+  const totalPages = Math.ceil(total / _hcLimit);
+  if (totalPages > 1) {
+    let html = '';
+    if (page > 0) html += `<button class="page-btn" onclick="loadHistoricoClientes(${page-1})">‹ Anterior</button>`;
+    html += `<span style="padding:0 .75rem;font-size:.82rem;color:var(--muted)">Página ${page+1} de ${totalPages}</span>`;
+    if (page < totalPages-1) html += `<button class="page-btn" onclick="loadHistoricoClientes(${page+1})">Próxima ›</button>`;
+    pag.innerHTML = html;
+  }
+}
+
+async function exportarHistoricoCSV() {
+  const r = await fetch(`/api/reservas/historico?${_hcParams(0)}&limit=9999`);
+  const d = await r.json();
+  if (!d.ok || !d.items.length) return;
+  const cols = ['Data','Horário','Cliente','Email','Tipo','Apto','Telefone','Sala','Tratamento','Massoterapeuta','Cadastrado em'];
+  const rows = d.items.map(it => [
+    it.data,
+    `${it.hora_inicio}-${it.hora_fim}`,
+    it.cliente,
+    it.email||'',
+    TIPO_CLIENTE_LABEL[it.tipo_cliente]||it.tipo_cliente||'',
+    it.apto||'',
+    it.telefone||'',
+    SALA_NOME[it.sala]||`Sala ${it.sala}`,
+    it.tipo_massagem_nome||it.tratamento||'',
+    it.massoterapeuta_nome||'',
+    it.criado_em||'',
+  ].map(v=>`"${String(v).replace(/"/g,'""')}"`));
+  const csv = [cols.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
+  a.download = `historico-spa-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
