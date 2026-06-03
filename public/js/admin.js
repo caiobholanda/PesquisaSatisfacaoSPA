@@ -44,6 +44,7 @@ function showApp() {
   if (view === 'view-massagistas') { loadMassagistas(); }
   else if (view === 'view-tipos') { loadTipos(); }
   else if (view === 'view-historico' && st.histId) { showHistoricoMassagista(st.histId, st.histNome); }
+  else if (view === 'view-historico-clientes') { loadHistoricoClientes(); }
   else if (view === 'view-reservas') {
     if (st.calOff != null) _calWeekOffset = st.calOff;
     if (st.calDay) { const [y,m,d]=st.calDay.split('-').map(Number); _calDiaSel=new Date(y,m-1,d); }
