@@ -301,7 +301,7 @@ async function openDrawer(id) {
   drawerEl.classList.add('open');
   document.getElementById('drawer-overlay').classList.add('open');
 
-  const res = await api(`/api/feedback/${id}`);
+  const res = await api(`/api/feedback/item/${id}`);
   if (!res) return;
   const d = await res.json();
   const r = d.item;
