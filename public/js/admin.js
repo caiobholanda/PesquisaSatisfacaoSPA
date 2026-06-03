@@ -1034,6 +1034,11 @@ function calOpenModal(salaId, data, hora) {
   if(data) document.getElementById('res-inp-data').value=data;
   document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',+b.dataset.sala===_resSala));
   loadTratamentosModal();
+  loadMassagistasModal();
+  const flt = document.getElementById('res-flt-bilingue');
+  if (flt) flt.checked = false;
+  const selM = document.getElementById('res-inp-massagista');
+  if (selM) selM.value = '';
   setTimeout(()=>document.getElementById('res-inp-nome').focus(),50);
 }
 window.calOpenModal=calOpenModal;
