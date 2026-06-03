@@ -1231,6 +1231,7 @@ document.getElementById('conflito-overlay').addEventListener('click', e => {
 
 document.getElementById('res-inp-hora-inicio').addEventListener('input', calAtualizarHoraFim);
 document.getElementById('res-inp-hora-inicio').addEventListener('change', calAtualizarHoraFim);
+document.getElementById('res-flt-bilingue')?.addEventListener('change', _renderMassagistasModal);
 
 // Modal de detalhes da reserva
 function calVerDetalhes(id) {
