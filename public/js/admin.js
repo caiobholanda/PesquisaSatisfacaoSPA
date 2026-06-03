@@ -1182,7 +1182,9 @@ function calVerDetalhes(id) {
     <div class="resdet-section">
       <div class="resdet-section-title">Tratamento</div>
       <div class="resdet-row"><span class="resdet-label">Serviço</span>${r.tratamento ? `<span class="resdet-value gold">${r.tratamento}</span>` : '<span class="resdet-value empty">não informado</span>'}</div>
-      <div class="resdet-row"><span class="resdet-label">Duração</span><span class="resdet-value mono">${dur} min</span></div>
+      ${r.linha ? `<div class="resdet-row"><span class="resdet-label">Linha</span><span class="resdet-value">${r.linha}</span></div>` : ''}
+      <div class="resdet-row"><span class="resdet-label">Bloco</span><span class="resdet-value mono">${dur} min · ${dur/30} slot${dur/30>1?'s':''}</span></div>
+      ${_renderResDetComboPreco(r)}
     </div>
 
     <div class="resdet-section">
