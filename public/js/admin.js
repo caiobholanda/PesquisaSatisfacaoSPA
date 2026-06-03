@@ -383,6 +383,30 @@ document.getElementById('btn-back-tipos').addEventListener('click', () => showVi
   document.getElementById(id)?.addEventListener('click', () => showView('view-main'));
 });
 
+// Botão de gerar dados de demonstração
+document.getElementById('btn-seed-demo')?.addEventListener('click', async () => {
+  const ok = confirm('⚠ Isso vai APAGAR todas as pesquisas atuais + apagar reservas de hoje e gerar:\n\n• 15 respostas fictícias com variação de notas\n• 5 reservas para hoje com tratamentos diferentes\n\nContinuar?');
+  if (!ok) return;
+  const btn = document.getElementById('btn-seed-demo');
+  btn.disabled = true;
+  const txt = btn.textContent;
+  btn.textContent = '⏳ Gerando...';
+  try {
+    const res = await api('/api/dev/seed-demo', { method: 'POST', body: '{}' });
+    if (!res) return;
+    const d = await res.json();
+    if (!d.ok) { alert('Erro: ' + (d.error || 'falha ao gerar dados')); return; }
+    alert(`✓ Pronto! ${d.feedbacks} pesquisas e ${d.reservas} reservas inseridas.`);
+    loadStats();
+    loadAll();
+  } catch (e) {
+    alert('Erro de conexão: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = txt;
+  }
+});
+
 // ── Massagistas ──
 let _tabMassagistas = 'ativas';
 let _massagistas = [];
