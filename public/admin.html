@@ -1470,6 +1470,9 @@
     .cal-slot.occupied:hover { background: transparent; }
     .cal-slot.occupied-cont { cursor: default; pointer-events: none; background: transparent; }
     .cal-slot.occupied-cont:hover { background: transparent; }
+    /* Slot de meia-hora (xx:30) — borda inferior mais sutil pra agrupar visualmente com xx:00 */
+    .cal-slot.half { border-bottom-style: dashed; border-bottom-color: var(--border-soft); }
+    .cal-time-cell.half { border-bottom-style: dashed; }
 
     /* Reservation blocks */
     .cal-res-block {
