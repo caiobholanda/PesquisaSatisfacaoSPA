@@ -257,13 +257,79 @@ export function deletarMassagista(id) {
 
 // ── Tipos de Massagem ──
 export function listarTiposMassagem() {
-  return getDb().prepare('SELECT * FROM tipos_massagem ORDER BY nome ASC').all();
+  return getDb().prepare('SELECT * FROM tipos_massagem ORDER BY categoria, nome ASC').all();
 }
-export function inserirTipoMassagem(nome, duracao_min, preco, descricao) {
-  return getDb().prepare('INSERT INTO tipos_massagem (nome, descricao, duracao_min, preco) VALUES (?, ?, ?, ?)').run(nome.trim(), descricao || null, duracao_min || null, preco || null).lastInsertRowid;
+export function inserirTipoMassagem(nome, duracao_min, preco, descricao, opts = {}) {
+  const { tipo = 'individual', categoria = null, componentes = null, linhas = null } = opts;
+  return getDb().prepare(
+    'INSERT INTO tipos_massagem (nome, descricao, duracao_min, preco, tipo, categoria, componentes, linhas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(nome.trim(), descricao || null, duracao_min || null, preco || null, tipo, categoria, componentes, linhas).lastInsertRowid;
 }
-export function atualizarTipoMassagem(id, nome, duracao_min, preco, ativo, descricao) {
-  return getDb().prepare('UPDATE tipos_massagem SET nome=?, descricao=?, duracao_min=?, preco=?, ativo=? WHERE id=?').run(nome.trim(), descricao || null, duracao_min || null, preco || null, ativo, id).changes;
+export function atualizarTipoMassagem(id, nome, duracao_min, preco, ativo, descricao, opts = {}) {
+  const { tipo, categoria, componentes, linhas } = opts;
+  const sets = ['nome=?', 'descricao=?', 'duracao_min=?', 'preco=?', 'ativo=?'];
+  const vals = [nome.trim(), descricao || null, duracao_min || null, preco || null, ativo];
+  if (tipo !== undefined) { sets.push('tipo=?'); vals.push(tipo); }
+  if (categoria !== undefined) { sets.push('categoria=?'); vals.push(categoria); }
+  if (componentes !== undefined) { sets.push('componentes=?'); vals.push(componentes); }
+  if (linhas !== undefined) { sets.push('linhas=?'); vals.push(linhas); }
+  vals.push(id);
+  return getDb().prepare(`UPDATE tipos_massagem SET ${sets.join(', ')} WHERE id=?`).run(...vals).changes;
+}
+
+// ── Seed: tratamentos do Gran Spa by L'Occitane ──
+function seedTratamentosGranSpa() {
+  const db = getDb();
+  const exists = nome => db.prepare('SELECT id FROM tipos_massagem WHERE nome = ?').get(nome);
+  const insert = (nome, duracao_min, preco, descricao, opts = {}) => {
+    if (exists(nome)) return exists(nome).id;
+    const { tipo = 'individual', categoria = null, componentes = null, linhas = null } = opts;
+    return db.prepare(
+      `INSERT INTO tipos_massagem (nome, descricao, duracao_min, preco, tipo, categoria, componentes, linhas, ativo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
+    ).run(nome, descricao, duracao_min, preco, tipo, categoria, componentes, linhas).lastInsertRowid;
+  };
+
+  // Individuais
+  const M = 'Massagem', T = 'Tratamento', C = 'Complementar', F = 'Facial';
+  insert('Relaxante aromacologia', 50, 445, 'Massagem suave com óleos essenciais aromáticos para aliviar o estresse e relaxar corpo e mente.', { categoria: M });
+  insert('Deep tissue',           50, 445, 'Massagem de pressão firme nas camadas profundas da musculatura, indicada para desfazer tensões e nós musculares.', { categoria: M });
+  insert('Signature lavanda',     50, 445, 'Massagem assinatura com óleo de lavanda, de efeito calmante, que promove relaxamento profundo.', { categoria: M });
+  insert('Bem estar da futura mamãe', 50, 445, 'Massagem desenvolvida para gestantes, com técnicas seguras que aliviam os desconfortos da gravidez.', { categoria: M });
+  insert('Reenergizante pedras do sol', 50, 445, 'Massagem com pedras aquecidas que combina calor e toque para relaxar os músculos e renovar a energia.', { categoria: M });
+  insert('Fabulosa com karité',   50, 445, 'Massagem nutritiva com manteiga de karité, que hidrata a pele enquanto relaxa o corpo.', { categoria: M });
+  insert('Nutrição intensa karité', 80, 560, 'Versão prolongada com karité, focada em hidratação intensa e relaxamento completo.', { categoria: M });
+  insert('Terapia do sono restaurador', 80, 560, 'Ritual relaxante com aromas e técnicas que preparam o corpo para um descanso reparador.', { categoria: M });
+
+  insert('Desintoxicante de amêndoa', 50, 445, 'Tratamento corporal com óleo de amêndoa que ajuda a eliminar toxinas e revitalizar a pele.', { categoria: T });
+  insert('Modelador amêndoa',         50, 445, 'Tratamento à base de amêndoa com foco em modelar o corpo e firmar a pele.', { categoria: T });
+
+  insert('Massagem pés com óleos essenciais', 30, 272, 'Massagem relaxante nos pés com óleos essenciais para aliviar o cansaço.', { categoria: C });
+  insert('Máscara corporal ultra hidratante Karité', 30, 359, 'Máscara corporal com karité para hidratação intensa da pele.', { categoria: C });
+  insert('Esfoliação corporal nutritiva Karité',     30, 272, 'Esfoliação que remove células mortas e nutre a pele com karité, deixando-a macia.', { categoria: C });
+  insert('Power nap',                                 30, 218, 'Sessão curta de descanso e relaxamento para recuperar as energias rapidamente.', { categoria: C });
+
+  const linhasFacial = JSON.stringify(['Immortelle', 'Source Réotier']);
+  insert('Lifting',             50, 445, 'Tratamento facial com efeito tensor que firma e revitaliza a pele do rosto.', { categoria: F, linhas: linhasFacial });
+  insert('Muscular Profunda',   50, 445, 'Tratamento facial que trabalha a musculatura do rosto, relaxando e tonificando.', { categoria: F, linhas: linhasFacial });
+  insert('Drenagem Linfática',  50, 445, 'Tratamento facial de drenagem que reduz o inchaço e ativa a circulação.', { categoria: F, linhas: linhasFacial });
+
+  // Combos — resolve IDs dos componentes pelo nome
+  const id = n => exists(n)?.id;
+  const combos = [
+    { nome: 'Gran sublime',      duracao: 80, preco: 663, desc: 'Combo Gran Sublime — Esfoliação Karité + Relaxante aromacologia. 80 minutos de hidratação e relaxamento profundo.', a: 'Esfoliação corporal nutritiva Karité', b: 'Relaxante aromacologia' },
+    { nome: 'Gran relaxamento',  duracao: 80, preco: 613, desc: 'Combo Gran Relaxamento — Relaxante aromacologia + Power nap. 80 minutos de relaxamento total.',                       a: 'Relaxante aromacologia',                b: 'Power nap' },
+    { nome: 'Ritual detox',      duracao: 80, preco: 663, desc: 'Combo Ritual Detox — Esfoliação Karité + Desintoxicante de amêndoa. 80 minutos de purificação e renovação.',          a: 'Esfoliação corporal nutritiva Karité', b: 'Desintoxicante de amêndoa' },
+  ];
+  for (const c of combos) {
+    if (exists(c.nome)) continue;
+    const ida = id(c.a), idb = id(c.b);
+    if (!ida || !idb) { console.warn(`[seed] Combo ${c.nome}: componente faltando (${c.a}, ${c.b})`); continue; }
+    db.prepare(
+      `INSERT INTO tipos_massagem (nome, descricao, duracao_min, preco, tipo, categoria, componentes, ativo)
+       VALUES (?, ?, ?, ?, 'combo', 'Combo', ?, 1)`
+    ).run(c.nome, c.desc, c.duracao, c.preco, JSON.stringify([ida, idb]));
+  }
 }
 export function deletarTipoMassagem(id) {
   return getDb().prepare('DELETE FROM tipos_massagem WHERE id=?').run(id).changes;
