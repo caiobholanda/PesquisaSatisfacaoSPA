@@ -373,6 +373,11 @@ document.getElementById('btn-back-historico').addEventListener('click', () => sh
 document.getElementById('btn-open-tipos').addEventListener('click', () => { showView('view-tipos'); loadTipos(); });
 document.getElementById('btn-back-tipos').addEventListener('click', () => showView('view-main'));
 
+// Botões "Início" — atalho direto pra view-main de qualquer subpágina
+['btn-home-massagistas','btn-home-tipos','btn-home-historico','btn-home-reservas'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', () => showView('view-main'));
+});
+
 // ── Massagistas ──
 let _tabMassagistas = 'ativas';
 let _massagistas = [];
