@@ -416,7 +416,7 @@ document.getElementById('btn-open-tipos').addEventListener('click', () => { show
 document.getElementById('btn-back-tipos').addEventListener('click', () => showView('view-main'));
 
 // Botão "Início" no header — atalho direto pra view-main, fica visível só em subpáginas
-document.getElementById('btn-header-home')?.addEventListener('click', () => showView('view-main'));
+document.getElementById('btn-header-home')?.addEventListener('click', () => { showView('view-reservas'); loadReservas(); });
 
 // Botão de gerar dados de demonstração — só pesquisas (reservas continuam manuais)
 document.getElementById('btn-seed-demo')?.addEventListener('click', async () => {
