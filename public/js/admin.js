@@ -192,7 +192,7 @@ function iniciarPollingStats() {
       loadStats();
       loadAll();
     }
-  }, 15000);
+  }, 60000);
 }
 function pararPollingStats() {
   if (_statsPoller) { clearInterval(_statsPoller); _statsPoller = null; }
