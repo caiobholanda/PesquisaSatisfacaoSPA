@@ -1187,6 +1187,16 @@ function calMostrarConflito(info) {
   document.getElementById('conflito-overlay').classList.add('aberto');
 }
 
+function _renderResDetMassagista(r) {
+  if (!r.massagista_id) return '<div class="resdet-row"><span class="resdet-label">Profissional</span><span class="resdet-value empty">não informada</span></div>';
+  const m = _massagistasModal.find(x => x.id === r.massagista_id);
+  if (!m) return `<div class="resdet-row"><span class="resdet-label">Profissional</span><span class="resdet-value mono">#${r.massagista_id}</span></div>`;
+  const badges = [];
+  if (m.bilingue) badges.push('<span style="display:inline-block;background:rgba(91,103,150,.12);color:var(--indigo);padding:.12rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.4rem">🌍 Bilíngue</span>');
+  if (m.vinculo) badges.push(`<span style="display:inline-block;background:var(--gold-dim);color:var(--gold-dark);padding:.12rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.3rem">${m.vinculo}</span>`);
+  return `<div class="resdet-row"><span class="resdet-label">Profissional</span><span class="resdet-value">${m.nome}${badges.join('')}</span></div>`;
+}
+
 function _renderResDetComboPreco(r) {
   // Localiza o tipo_massagem (cache _tratamentos pode não ter sido carregado nesta sessão)
   const tm = _tratamentos.find(t => t.id === r.tipo_massagem_id || t.nome === r.tratamento);
