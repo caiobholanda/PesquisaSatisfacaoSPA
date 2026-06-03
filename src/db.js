@@ -157,6 +157,10 @@ export function inserirFeedback(dados) {
   return stmt.run(dados).lastInsertRowid;
 }
 
+export function getFeedbackById(id) {
+  return getDb().prepare('SELECT * FROM feedback WHERE id = ?').get(id) || null;
+}
+
 export function listarFeedback({ origem, tipo_cliente, from, to, limit = 50, offset = 0 } = {}) {
   const db = getDb();
   const conds = [];
