@@ -28,7 +28,7 @@ async function api(url, opts = {}) {
   return res;
 }
 
-function logout() { clearToken(); sessionStorage.removeItem('_vst'); showLogin(); }
+function logout() { pararPollingStats?.(); clearToken(); sessionStorage.removeItem('_vst'); showLogin(); }
 
 function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
@@ -103,7 +103,21 @@ function renderDistBar(dist) {
   const seg = (k) => { const p = pct(k); return p > 0 ? `<div class="dist-seg seg-${k}" style="width:${p}%">${p >= 9 ? p + '%' : ''}</div>` : ''; };
   const leg = (k, lbl) => `<span class="dist-leg"><span class="dist-leg-dot ${k}"></span><strong>${pct(k)}%</strong> ${lbl} (${dist[k]})</span>`;
   return `<div class="dist-bar">${seg('otimo')}${seg('bom')}${seg('regular')}${seg('ruim')}</div>
-    <div class="dist-legend">${leg('otimo','Ótimo')}${leg('bom','Bom')}${leg('regular','Regular')}${leg('ruim','Ruim')}<span class="dist-leg" style="margin-left:auto">${dist.total} resp.</span></div>`;
+    <div class="dist-legend">${leg('otimo','Ótimo')}${leg('bom','Bom')}${leg('regular','Regular')}${leg('ruim','À Melhorar')}<span class="dist-leg" style="margin-left:auto">${dist.total} resp.</span></div>`;
+}
+
+function _scoreColor(media) {
+  if (media == null) return 'var(--muted)';
+  if (media >= 7) return 'var(--success)';
+  if (media >= 4) return 'var(--gold-dark)';
+  if (media >= 2) return 'var(--gold)';
+  return 'var(--danger)';
+}
+
+function renderMediaBadge(media) {
+  if (media == null) return '<span class="q-media-badge empty">— / 9</span>';
+  const cor = _scoreColor(media);
+  return `<span class="q-media-badge" style="background:${cor}1A;color:${cor};border-color:${cor}40"><strong>${media.toFixed(1)}</strong><span class="q-media-max"> / ${NOTA_MAX}</span></span>`;
 }
 
 function renderTextoGroup(titulo, items) {
@@ -117,10 +131,11 @@ function renderAnalysis(d) {
   const grid = document.getElementById('analysis-grid');
   if (!d.distribuicoes) { grid.style.display = 'none'; return; }
   grid.style.display = 'grid';
+  const m = d.medias || {};
   document.getElementById('dist-servicos').innerHTML = SERVICOS_LABELS.map(({ campo, label }) =>
-    `<div class="q-row"><div class="q-label">${label}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
+    `<div class="q-row"><div class="q-label-row"><div class="q-label">${label}</div>${renderMediaBadge(m[campo])}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
   document.getElementById('dist-instalacoes').innerHTML = INSTALACOES_LABELS.map(({ campo, label }) =>
-    `<div class="q-row"><div class="q-label">${label}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
+    `<div class="q-row"><div class="q-label-row"><div class="q-label">${label}</div>${renderMediaBadge(m[campo])}</div>${renderDistBar(d.distribuicoes[campo])}</div>`).join('');
   const t = d.textos || {};
   const cols = [
     renderTextoGroup('Comentários sobre serviços', t.servicos),
@@ -148,10 +163,38 @@ async function loadStats() {
   const c = d.porOrigem.find(r => r.origem === 'colaborador')?.t || 0;
   document.getElementById('kpi-origem').innerHTML = `<span style="color:var(--gold)">${h}</span> / <span style="color:var(--indigo)">${c}</span>`;
   renderAnalysis(d);
+  _atualizarUltimoSync();
 }
 
+let _statsPoller = null;
+function _atualizarUltimoSync() {
+  const el = document.getElementById('stats-last-sync');
+  if (el) {
+    const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    el.textContent = `Atualizado às ${hora}`;
+  }
+}
+function iniciarPollingStats() {
+  pararPollingStats();
+  _statsPoller = setInterval(() => {
+    if (document.getElementById('view-main')?.style.display !== 'none' && !document.hidden) {
+      loadStats();
+      loadAll();
+    }
+  }, 15000);
+}
+function pararPollingStats() {
+  if (_statsPoller) { clearInterval(_statsPoller); _statsPoller = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && document.getElementById('view-main')?.style.display !== 'none' && tokenValido()) {
+    loadStats();
+  }
+});
+
 // ── Table ──
-const NOTA_MAP = { otimo: 4, bom: 3, regular: 2, ruim: 1 };
+const NOTA_MAP = { otimo: 9, bom: 3, regular: 1, ruim: 0 };
+const NOTA_MAX = 9;
 function avgRow(r) {
   const campos = ['servicos_expectativa','servicos_explicacao','servicos_atitude','servicos_tecnica','instalacoes_conforto','instalacoes_organizacao','instalacoes_conveniencia'];
   const vals = campos.map(c => NOTA_MAP[r[c]]).filter(Boolean);
@@ -309,6 +352,7 @@ function showView(id) {
   window.scrollTo(0, 0);
   const cur = JSON.parse(sessionStorage.getItem('_vst') || '{}');
   sessionStorage.setItem('_vst', JSON.stringify({ ...cur, view: id }));
+  if (id === 'view-main') iniciarPollingStats(); else pararPollingStats();
 }
 
 // ── Init ──
