@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { listarReservasSemana, inserirReserva, cancelarReserva } from '../db.js';
+import { listarReservasSemana, inserirReserva, cancelarReserva, listarTodasReservas } from '../db.js';
 
 const router = Router();
 router.use(requireAuth);
