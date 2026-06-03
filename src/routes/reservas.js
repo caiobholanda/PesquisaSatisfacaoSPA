@@ -21,9 +21,11 @@ function _hhmmToMin(s) {
 }
 
 router.post('/', (req, res) => {
-  const { sala, tipo_cliente, cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id } = req.body || {};
+  const { sala, tipo_cliente, cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id } = req.body || {};
   if (!sala || !tipo_cliente || !cliente?.trim() || !email?.trim() || !data || !hora_inicio || !hora_fim)
     return res.status(400).json({ ok: false, error: 'Campos obrigatórios ausentes' });
+  if (!massagista_id)
+    return res.status(400).json({ ok: false, error: 'Selecione uma massoterapeuta para o atendimento' });
   if (!['hospede', 'passante'].includes(tipo_cliente))
     return res.status(400).json({ ok: false, error: 'Tipo de cliente inválido' });
 
@@ -40,11 +42,20 @@ router.post('/', (req, res) => {
     const id = inserirReserva(
       +sala, cliente.trim(), tipo_cliente, apto?.trim() || null, email.trim(),
       telefone?.trim() || null, tratamento?.trim() || null, data, hora_inicio, hora_fim,
-      { linha: linha?.trim() || null, tipo_massagem_id: tipo_massagem_id ? +tipo_massagem_id : null }
+      {
+        linha: linha?.trim() || null,
+        tipo_massagem_id: tipo_massagem_id ? +tipo_massagem_id : null,
+        massagista_id: +massagista_id,
+      }
     );
     res.status(201).json({ ok: true, id });
   } catch (e) {
-    if (e.code === 'CONFLITO') return res.status(409).json({ ok: false, error: 'Horário já reservado para esta sala' });
+    if (e.code === 'CONFLITO_SALA') {
+      return res.status(409).json({ ok: false, error: 'Sala já reservada neste horário', tipo: 'sala', conflito: e.conflito });
+    }
+    if (e.code === 'CONFLITO_PROF') {
+      return res.status(409).json({ ok: false, error: 'Massoterapeuta já tem atendimento neste horário', tipo: 'massagista', conflito: e.conflito });
+    }
     throw e;
   }
 });
