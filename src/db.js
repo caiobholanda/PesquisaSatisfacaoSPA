@@ -475,6 +475,20 @@ export function buscarAdmin(username) {
   return getDb().prepare('SELECT * FROM admin_users WHERE username = ?').get(username);
 }
 
+export function listarAdmins() {
+  return getDb().prepare('SELECT id, username, created_at FROM admin_users ORDER BY created_at ASC').all();
+}
+
+export function inserirAdmin(username, passwordHash) {
+  return getDb().prepare(
+    'INSERT INTO admin_users (username, password_hash) VALUES (?, ?)'
+  ).run(username, passwordHash).lastInsertRowid;
+}
+
+export function deletarAdmin(id) {
+  return getDb().prepare('DELETE FROM admin_users WHERE id = ?').run(id).changes;
+}
+
 export function exportarCsv({ origem, tipo_cliente, from, to } = {}) {
   const { items } = listarFeedback({ origem, tipo_cliente, from, to, limit: 9999, offset: 0 });
   return items;

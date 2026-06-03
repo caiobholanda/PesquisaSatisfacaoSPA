@@ -385,7 +385,7 @@ function loadAll() { loadStats(); loadTable(); }
 
 // ── Navegação entre views ──
 function showView(id) {
-  ['view-main', 'view-massagistas', 'view-tipos', 'view-historico', 'view-reservas', 'view-historico-clientes'].forEach(v => {
+  ['view-main', 'view-massagistas', 'view-tipos', 'view-historico', 'view-reservas', 'view-historico-clientes', 'view-usuarios'].forEach(v => {
     document.getElementById(v).style.display = v === id ? 'block' : 'none';
   });
   window.scrollTo(0, 0);
@@ -1499,6 +1499,76 @@ document.getElementById('btn-week-next').addEventListener('click',()=>{_calWeekO
 document.getElementById('btn-week-hoje').addEventListener('click',()=>{_calWeekOffset=0;_calDiaSel=null;loadReservas();});
 document.getElementById('btn-open-relatorios').addEventListener('click',()=>showView('view-main'));
 document.getElementById('btn-back-reservas').addEventListener('click',()=>showView('view-reservas'));
+
+// Dropdowns SPA e Administrativo
+(function setupDropdowns() {
+  function makeDropdown(toggleId, menuId) {
+    const toggle = document.getElementById(toggleId);
+    const menu   = document.getElementById(menuId);
+    toggle.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); });
+    menu.addEventListener('click', () => menu.classList.remove('open'));
+  }
+  makeDropdown('btn-spa-toggle', 'spa-dropdown-menu');
+  makeDropdown('btn-admin-toggle', 'admin-dropdown-menu');
+  document.addEventListener('click', () => {
+    document.getElementById('spa-dropdown-menu').classList.remove('open');
+    document.getElementById('admin-dropdown-menu').classList.remove('open');
+  });
+})();
+
+// Usuários
+document.getElementById('btn-open-usuarios').addEventListener('click',()=>{showView('view-usuarios');loadUsuarios();});
+document.getElementById('btn-back-usuarios').addEventListener('click',()=>showView('view-main'));
+document.getElementById('btn-toggle-form-usuario').addEventListener('click',()=>{
+  const f=document.getElementById('form-usuario');
+  f.style.display = f.style.display==='none' ? 'block' : 'none';
+});
+document.getElementById('btn-cancel-form-usuario').addEventListener('click',()=>{
+  document.getElementById('form-usuario').style.display='none';
+  document.getElementById('usuario-username').value='';
+  document.getElementById('usuario-senha').value='';
+});
+
+async function loadUsuarios() {
+  const tbody = document.getElementById('usuarios-body');
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--muted)">Carregando…</td></tr>';
+  const r = await api('/api/auth/usuarios');
+  if (!r) return;
+  const d = await r.json();
+  if (!d.ok || !d.items?.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--muted)">Nenhum usuário.</td></tr>';
+    return;
+  }
+  const fmt = iso => iso ? iso.slice(0,10).split('-').reverse().join('/') : '—';
+  tbody.innerHTML = d.items.map(u => `<tr>
+    <td style="font-weight:500">${escHtml(u.username)}</td>
+    <td style="font-size:.82rem;color:var(--muted)">${fmt(u.created_at)}</td>
+    <td style="text-align:right"><button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="deletarUsuario(${u.id},'${escHtml(u.username)}')">Remover</button></td>
+  </tr>`).join('');
+}
+
+document.getElementById('btn-add-usuario').addEventListener('click', async () => {
+  const username = document.getElementById('usuario-username').value.trim();
+  const senha    = document.getElementById('usuario-senha').value;
+  const msg      = document.getElementById('usuario-msg');
+  msg.style.display = 'none';
+  if (!username || !senha) { msg.textContent='Preencha usuário e senha.'; msg.style.display='block'; return; }
+  const r = await api('/api/auth/usuarios', { method:'POST', body: JSON.stringify({ username, senha }) });
+  if (!r) return;
+  const d = await r.json();
+  if (!d.ok) { msg.textContent = d.error || 'Erro ao salvar.'; msg.style.display='block'; return; }
+  document.getElementById('form-usuario').style.display='none';
+  document.getElementById('usuario-username').value='';
+  document.getElementById('usuario-senha').value='';
+  loadUsuarios();
+});
+
+window.deletarUsuario = async (id, nome) => {
+  if (!confirm(`Remover usuário "${nome}"?`)) return;
+  const r = await api(`/api/auth/usuarios/${id}`, { method:'DELETE' });
+  if (!r) return;
+  loadUsuarios();
+};
 
 document.getElementById('btn-open-historico-clientes').addEventListener('click',()=>{showView('view-historico-clientes');loadHistoricoClientes();});
 document.getElementById('btn-back-historico-clientes').addEventListener('click',()=>showView('view-main'));

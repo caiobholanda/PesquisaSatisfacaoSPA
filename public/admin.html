@@ -815,6 +815,24 @@
     .btn-danger         { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
     .btn-sm             { padding: 0.3125rem 0.75rem; font-size: 0.7rem; }
 
+    /* ── Dropdown Administrativo ── */
+    .admin-dropdown { position: relative; }
+    .admin-dropdown-menu {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.12);
+      min-width: 170px; z-index: 200; padding: 4px 0; overflow: hidden;
+    }
+    .admin-dropdown-menu.open { display: block; }
+    .dropdown-item {
+      display: block; width: 100%; padding: .5rem 1rem;
+      background: none; border: none; text-align: left;
+      font-size: .78rem; font-family: inherit; color: var(--text);
+      cursor: pointer; letter-spacing: .02em;
+    }
+    .dropdown-item:hover { background: var(--surface2); color: var(--gold-dark); }
+    .dropdown-caret { font-size: .65rem; margin-left: .3rem; opacity: .7; }
+
     #msg-login {
       font-size: 0.8125rem;
       color: var(--danger);
@@ -2208,10 +2226,21 @@
       <button class="btn btn-outline btn-sm" id="btn-header-home" title="Voltar para a página inicial" style="display:none;border-color:var(--gold);color:var(--gold-dark);font-weight:600">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:.25rem"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Início
       </button>
-      <button class="btn btn-outline btn-sm" id="btn-open-massagistas">Massoterapeutas</button>
-      <button class="btn btn-outline btn-sm" id="btn-open-tipos">Tipos de Tratamento</button>
-      <button class="btn btn-outline btn-sm" id="btn-open-relatorios">Relatórios</button>
-      <button class="btn btn-outline btn-sm" id="btn-open-historico-clientes">Histórico</button>
+      <div class="admin-dropdown" id="spa-dropdown">
+        <button class="btn btn-outline btn-sm" id="btn-spa-toggle">SPA<span class="dropdown-caret">▾</span></button>
+        <div class="admin-dropdown-menu" id="spa-dropdown-menu">
+          <button class="dropdown-item" id="btn-open-massagistas">Massoterapeutas</button>
+          <button class="dropdown-item" id="btn-open-tipos">Tipos de Tratamento</button>
+        </div>
+      </div>
+      <div class="admin-dropdown" id="admin-dropdown">
+        <button class="btn btn-outline btn-sm" id="btn-admin-toggle">Administrativo<span class="dropdown-caret">▾</span></button>
+        <div class="admin-dropdown-menu" id="admin-dropdown-menu">
+          <button class="dropdown-item" id="btn-open-relatorios">Relatórios</button>
+          <button class="dropdown-item" id="btn-open-historico-clientes">Histórico</button>
+          <button class="dropdown-item" id="btn-open-usuarios">Usuários</button>
+        </div>
+      </div>
       <button class="btn btn-outline btn-sm" id="btn-seed-demo" title="Gera 15 pesquisas de satisfação fictícias" style="border-color:var(--indigo);color:var(--indigo)">🧪 Gerar dados de demo</button>
       <button class="btn btn-outline btn-sm" id="btn-sair">Sair</button>
     </div>
@@ -2542,6 +2571,38 @@
         </table>
         <div id="hc-empty" class="empty" style="display:none">Nenhum atendimento encontrado.</div>
         <div class="pagination" id="hc-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: Usuários ── -->
+    <div id="view-usuarios" class="view-page" style="display:none">
+      <div class="page-hero">
+        <button class="btn-back" id="btn-back-usuarios">← Voltar</button>
+        <div>
+          <div class="page-hero-eyebrow">
+            <span class="page-num">Admin</span>
+            <h1 class="page-title">Usuários</h1>
+          </div>
+          <p class="page-sub">Gerenciamento de usuários administrativos</p>
+        </div>
+        <button class="btn btn-gold btn-sm" id="btn-toggle-form-usuario" style="margin-left:auto">+ Novo Usuário</button>
+      </div>
+      <div class="card" id="form-usuario" style="display:none;margin-bottom:1.5rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;align-items:end">
+          <div><label class="field-label">Usuário</label><input class="field-input" id="usuario-username" placeholder="login"></div>
+          <div><label class="field-label">Senha</label><input class="field-input" type="password" id="usuario-senha" placeholder="nova senha"></div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-gold" id="btn-add-usuario">Salvar</button>
+            <button class="btn btn-outline" id="btn-cancel-form-usuario">Cancelar</button>
+          </div>
+        </div>
+        <div id="usuario-msg" style="margin-top:.75rem;font-size:.82rem;color:var(--danger);display:none"></div>
+      </div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Usuário</th><th>Criado em</th><th></th></tr></thead>
+          <tbody id="usuarios-body"><tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--muted)">Carregando…</td></tr></tbody>
+        </table>
       </div>
     </div>
 
