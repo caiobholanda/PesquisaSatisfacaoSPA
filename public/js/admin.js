@@ -1024,9 +1024,10 @@ function renderCalDia() {
           const topPx=((rs-slotS)/SLOT_MIN)*CAL_SLOT_PX+2;
           const ht=((re-rs)/SLOT_MIN)*CAL_SLOT_PX-4;
           html+=`<div class="cal-slot occupied${halfClass}" style="overflow:visible;position:relative">
-            <div class="cal-res-block ${room.cls}" style="top:${topPx}px;height:${ht}px;cursor:pointer" onclick="calVerDetalhes(${res.id})" title="Clique para ver detalhes">
+            <div class="cal-res-block ${room.cls}" style="top:${topPx}px;height:${ht}px;cursor:pointer" onclick="calVerDetalhes(${res.id})" title="${res.cliente}${res.tratamento ? ' · ' + res.tratamento : ''} · ${res.hora_inicio} – ${res.hora_fim}">
               <div>
                 <div class="cal-res-name">${res.cliente}</div>
+                ${res.tratamento ? `<div class="cal-res-trat">${res.tratamento}</div>` : ''}
                 <div class="cal-res-time">${res.hora_inicio} – ${res.hora_fim}</div>
               </div>
               <button class="cal-res-cancel" onclick="event.stopPropagation();calCancelar(${res.id})" title="Cancelar reserva">
