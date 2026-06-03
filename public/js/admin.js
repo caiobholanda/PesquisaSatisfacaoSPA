@@ -928,21 +928,25 @@ function renderCalDia() {
         <div class="cal-room-col-sub">${r.tipo} · ${r.cap} pessoa${r.cap>1?'s':''}</div>
       </div>`).join('');
 
+  const SLOT_MIN = 30;
   let html='';
-  for(let h=CAL_H_START;h<CAL_H_END;h++){
-    const slotS=h*60, slotE=slotS+60;
-    const timeStr=String(h).padStart(2,'0')+':00';
-    const ultimo = (h === CAL_H_END - 1);
-    html+=`<div class="cal-time-cell"${ultimo?' style="border-bottom-color:var(--gold)"':''}>${timeStr}</div>`;
+  for(let m=CAL_H_START*60; m<CAL_H_END*60; m+=SLOT_MIN){
+    const slotS=m, slotE=slotS+SLOT_MIN;
+    const hh=Math.floor(m/60), mm=m%60;
+    const timeStr=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+    const mostraHora = (mm === 0);
+    const ultimo = (m + SLOT_MIN >= CAL_H_END * 60);
+    const halfClass = mm === 0 ? '' : ' half';
+    html+=`<div class="cal-time-cell${halfClass}"${ultimo?' style="border-bottom-color:var(--gold)"':''}>${mostraHora ? timeStr : ''}</div>`;
     CAL_ROOMS.forEach(room=>{
       const res=dayRes.find(r=>r.sala===room.id&&calTimeMin(r.hora_inicio)<slotE&&calTimeMin(r.hora_fim)>slotS);
       if(res){
         const rs=calTimeMin(res.hora_inicio), re=calTimeMin(res.hora_fim);
         const isFirst=rs>=slotS&&rs<slotE;
         if(isFirst){
-          const topPx=((rs-slotS)/60)*CAL_SLOT_PX+2;
-          const ht=((re-rs)/60)*CAL_SLOT_PX-4;
-          html+=`<div class="cal-slot occupied" style="overflow:visible;position:relative">
+          const topPx=((rs-slotS)/SLOT_MIN)*CAL_SLOT_PX+2;
+          const ht=((re-rs)/SLOT_MIN)*CAL_SLOT_PX-4;
+          html+=`<div class="cal-slot occupied${halfClass}" style="overflow:visible;position:relative">
             <div class="cal-res-block ${room.cls}" style="top:${topPx}px;height:${ht}px;cursor:pointer" onclick="calVerDetalhes(${res.id})" title="Clique para ver detalhes">
               <div>
                 <div class="cal-res-name">${res.cliente}</div>
@@ -954,10 +958,10 @@ function renderCalDia() {
             </div>
           </div>`;
         } else {
-          html+=`<div class="cal-slot occupied-cont"></div>`;
+          html+=`<div class="cal-slot occupied-cont${halfClass}"></div>`;
         }
       } else {
-        html+=`<div class="cal-slot" onclick="calOpenModal(${room.id},'${ds}','${timeStr}')"></div>`;
+        html+=`<div class="cal-slot${halfClass}" onclick="calOpenModal(${room.id},'${ds}','${timeStr}')"></div>`;
       }
     });
   }
