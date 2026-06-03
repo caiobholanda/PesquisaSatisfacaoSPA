@@ -1542,7 +1542,8 @@ async function loadHistoricoClientes(page=0) {
   empty.style.display = 'none';
   pag.innerHTML = '';
 
-  const r = await fetch(`/api/reservas/historico?${_hcParams(page * _hcLimit)}`);
+  const r = await api(`/api/reservas/historico?${_hcParams(page * _hcLimit)}`);
+  if (!r) return;
   const d = await r.json();
   if (!d.ok) { body.innerHTML=''; empty.textContent='Erro ao carregar dados.'; empty.style.display='block'; return; }
 
@@ -1594,7 +1595,8 @@ async function loadHistoricoClientes(page=0) {
 }
 
 async function exportarHistoricoCSV() {
-  const r = await fetch(`/api/reservas/historico?${_hcParams(0)}&limit=9999`);
+  const r = await api(`/api/reservas/historico?${_hcParams(0)}&limit=9999`);
+  if (!r) return;
   const d = await r.json();
   if (!d.ok || !d.items.length) return;
   const cols = ['Data','Horário','Cliente','Email','Tipo','Apto','Telefone','Sala','Tratamento','Massoterapeuta','Cadastrado em'];
