@@ -204,6 +204,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ── Table ──
+let _tableAbort = null;
 const NOTA_MAP = { otimo: 9, bom: 3, regular: 1, ruim: 0 };
 const NOTA_MAX = 9;
 function avgRow(r) {
