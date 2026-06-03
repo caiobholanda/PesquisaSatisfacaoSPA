@@ -898,7 +898,8 @@ function renderCalDia() {
   for(let h=CAL_H_START;h<CAL_H_END;h++){
     const slotS=h*60, slotE=slotS+60;
     const timeStr=String(h).padStart(2,'0')+':00';
-    html+=`<div class="cal-time-cell">${timeStr}</div>`;
+    const ultimo = (h === CAL_H_END - 1);
+    html+=`<div class="cal-time-cell"${ultimo?' style="border-bottom-color:var(--gold)"':''}>${timeStr}</div>`;
     CAL_ROOMS.forEach(room=>{
       const res=dayRes.find(r=>r.sala===room.id&&calTimeMin(r.hora_inicio)<slotE&&calTimeMin(r.hora_fim)>slotS);
       if(res){
@@ -926,6 +927,11 @@ function renderCalDia() {
       }
     });
   }
+  // Linha visual de fim de expediente (22:00)
+  html += `<div class="cal-close-row">
+    <div class="cal-close-time">${String(CAL_H_END).padStart(2,'0')}:00</div>
+    <div class="cal-close-label">Fim do expediente · spa fecha</div>
+  </div>`;
   document.getElementById('cal-grid').innerHTML=html;
 }
 
@@ -970,15 +976,42 @@ function calAtualizarHoraFim() {
   const trat = document.getElementById('res-inp-tratamento');
   const opt = trat.options[trat.selectedIndex];
   const dur = parseInt(opt?.dataset?.dur || '0', 10);
-  if (!inicio) { _resHoraInicio = null; _resHoraFim = null; document.getElementById('res-tempo-val').textContent = '—'; return; }
+  const tempoEl = document.getElementById('res-tempo-val');
+  const stripEl = document.getElementById('res-tempo-info');
+  stripEl.style.borderColor = '';
+  stripEl.style.background = '';
+
+  if (!inicio) { _resHoraInicio = null; _resHoraFim = null; tempoEl.textContent = '—'; return; }
+
+  const iniMin = calTimeMin(inicio);
+  if (iniMin < CAL_H_START * 60 || iniMin >= CAL_H_END * 60) {
+    _resHoraInicio = inicio;
+    _resHoraFim = null;
+    tempoEl.innerHTML = `<span style="color:var(--danger);font-weight:600">⚠ ${inicio} fora do horário do spa (08:00–22:00)</span>`;
+    stripEl.style.borderColor = 'var(--danger)';
+    stripEl.style.background = 'var(--danger-dim)';
+    return;
+  }
+
   _resHoraInicio = inicio;
   if (!trat.value || !dur) {
     _resHoraFim = null;
-    document.getElementById('res-tempo-val').textContent = trat.value ? `${inicio} (tratamento sem duração)` : `início ${inicio} · selecione um tratamento`;
+    tempoEl.textContent = trat.value ? `${inicio} (tratamento sem duração)` : `início ${inicio} · selecione um tratamento`;
     return;
   }
-  _resHoraFim = calMinTime(Math.min(calTimeMin(inicio) + dur, CAL_H_END * 60));
-  document.getElementById('res-tempo-val').textContent = `${inicio} – ${_resHoraFim} · ${dur} min`;
+
+  const fimMin = iniMin + dur;
+  if (fimMin > CAL_H_END * 60) {
+    _resHoraFim = null;
+    const horaFimExced = calMinTime(fimMin);
+    tempoEl.innerHTML = `<span style="color:var(--danger);font-weight:600">⚠ Terminaria às ${horaFimExced} — spa fecha às ${String(CAL_H_END).padStart(2,'0')}:00</span>`;
+    stripEl.style.borderColor = 'var(--danger)';
+    stripEl.style.background = 'var(--danger-dim)';
+    return;
+  }
+
+  _resHoraFim = calMinTime(fimMin);
+  tempoEl.textContent = `${inicio} – ${_resHoraFim} · ${dur} min`;
 }
 
 // Detecta conflito local antes de bater no servidor
@@ -1124,8 +1157,20 @@ document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
   if(!email){err.textContent='Informe o e-mail.';return;}
   if(!horaInicio){err.textContent='Informe a hora de início.';return;}
   if(!tratamento){err.textContent='Selecione o tratamento.';return;}
-  if(!_resHoraFim){err.textContent='Tratamento sem duração definida, contate o administrador.';return;}
+  if(!_resHoraFim){
+    err.textContent='Horário inválido: o tratamento ultrapassaria o expediente do spa (fecha às 22:00).';
+    return;
+  }
   if(!data){err.textContent='Informe a data.';return;}
+  const iniMinSub = calTimeMin(horaInicio);
+  if (iniMinSub < CAL_H_START*60 || iniMinSub >= CAL_H_END*60) {
+    err.textContent = `Hora de início fora do expediente do spa (${String(CAL_H_START).padStart(2,'0')}:00–${String(CAL_H_END).padStart(2,'0')}:00).`;
+    return;
+  }
+  if (calTimeMin(_resHoraFim) > CAL_H_END*60) {
+    err.textContent = `O tratamento terminaria após o fechamento do spa às ${String(CAL_H_END).padStart(2,'0')}:00.`;
+    return;
+  }
 
   // Verificação local de conflito antes de bater no servidor
   const conflito = calDetectarConflito(sala, data, horaInicio, _resHoraFim);

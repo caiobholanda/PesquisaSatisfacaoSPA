@@ -1404,12 +1404,39 @@
     /* Calendar grid: time axis + 3 room columns */
     .cal-scroll {
       overflow-y: auto;
-      max-height: 560px;
+      max-height: 600px;
+      scrollbar-gutter: stable;
     }
 
     .cal-grid {
       display: grid;
       grid-template-columns: 56px 1fr 1fr 1fr;
+    }
+
+    .cal-close-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      align-items: center;
+      padding: .65rem 0;
+      border-top: 2px solid var(--gold);
+      background: linear-gradient(180deg, transparent 0%, var(--gold-dim) 100%);
+    }
+    .cal-close-time {
+      padding: 0 .625rem;
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--gold-dark);
+      font-weight: 600;
+    }
+    .cal-close-label {
+      padding-left: 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gold-dark);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .cal-time-cell {
@@ -2259,8 +2286,8 @@
       </div>
 
       <div class="cal-container">
-        <div class="cal-rooms-header" id="cal-rooms-header"></div>
         <div class="cal-scroll">
+          <div class="cal-rooms-header" id="cal-rooms-header"></div>
           <div class="cal-grid" id="cal-grid"></div>
         </div>
       </div>
@@ -2337,7 +2364,7 @@
         </div>
         <div class="res-fg">
           <label>Hora de início <span style="color:var(--danger)">*</span></label>
-          <input type="time" id="res-inp-hora-inicio" min="08:00" max="22:00" step="900">
+          <input type="time" id="res-inp-hora-inicio" min="08:00" max="21:45" step="900">
         </div>
       </div>
       <div class="res-tempo-info" id="res-tempo-info">
