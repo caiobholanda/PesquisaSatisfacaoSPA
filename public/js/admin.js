@@ -672,12 +672,24 @@ window.showHistoricoMassagista = async (id, nome) => {
   document.getElementById('hist-kpi-row').innerHTML = '<div class="hist-kpi"><div class="hist-kpi-label">Carregando…</div></div>';
   document.getElementById('hist-list').innerHTML = '';
 
-  const res = await api(`/api/massagistas/${id}/historico`);
-  if (!res) return;
-  const d = await res.json();
-  if (!d.ok) return;
+  let res, d;
+  try {
+    res = await api(`/api/massagistas/${id}/historico`);
+    if (!res) {
+      document.getElementById('hist-kpi-row').innerHTML = '<div class="hist-kpi"><div class="hist-kpi-label" style="color:var(--danger)">Sessão expirada. Faça login novamente.</div></div>';
+      return;
+    }
+    d = await res.json();
+  } catch (e) {
+    document.getElementById('hist-kpi-row').innerHTML = `<div class="hist-kpi"><div class="hist-kpi-label" style="color:var(--danger)">Erro de conexão: ${e.message}</div></div>`;
+    return;
+  }
+  if (!d.ok) {
+    document.getElementById('hist-kpi-row').innerHTML = `<div class="hist-kpi"><div class="hist-kpi-label" style="color:var(--danger)">${d.error || 'Erro ao carregar histórico'}</div></div>`;
+    return;
+  }
 
-  const items = d.items;
+  const items = d.items || [];
   const total = items.length;
   const avgs = items.map(avgRow).filter(v => v !== null).map(Number);
   const mediaGeral = avgs.length ? (avgs.reduce((a, b) => a + b, 0) / avgs.length).toFixed(2) : null;
