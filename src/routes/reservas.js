@@ -11,6 +11,19 @@ router.get('/', (req, res) => {
   res.json({ ok: true, items: listarReservasSemana(from, to) });
 });
 
+router.get('/historico', (req, res) => {
+  const { from, to, sala, busca, limit, offset } = req.query;
+  const result = listarTodasReservas({
+    from: from || null,
+    to: to || null,
+    sala: sala || null,
+    busca: busca || null,
+    limit: limit ? +limit : 100,
+    offset: offset ? +offset : 0,
+  });
+  res.json({ ok: true, ...result });
+});
+
 const SPA_OPEN_MIN = 8 * 60;   // 08:00
 const SPA_CLOSE_MIN = 22 * 60; // 22:00
 function _hhmmToMin(s) {
