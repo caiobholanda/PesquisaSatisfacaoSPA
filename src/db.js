@@ -275,6 +275,7 @@ export function listarMassagistasComStats() {
   return getDb().prepare(`
     SELECT
       m.id, m.nome, m.ativo, m.created_at,
+      m.matricula, m.especialidade_original, m.funcao, m.vinculo, m.bilingue, m.disponibilidade,
       COUNT(f.id) AS total_avaliacoes,
       SUM(CASE WHEN f.recomenda = 'sim' THEN 1 ELSE 0 END) AS rec_sim
     FROM massagistas m
@@ -283,11 +284,22 @@ export function listarMassagistasComStats() {
     ORDER BY m.nome ASC
   `).all();
 }
-export function inserirMassagista(nome) {
-  return getDb().prepare('INSERT INTO massagistas (nome) VALUES (?)').run(nome.trim()).lastInsertRowid;
+export function inserirMassagista(nome, opts = {}) {
+  const { matricula = null, especialidade_original = null, funcao = 'Massoterapeuta', vinculo = null, bilingue = 0, disponibilidade = null } = opts;
+  return getDb().prepare(
+    `INSERT INTO massagistas (nome, matricula, especialidade_original, funcao, vinculo, bilingue, disponibilidade)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).run(nome.trim(), matricula, especialidade_original, funcao, vinculo, bilingue ? 1 : 0, disponibilidade).lastInsertRowid;
 }
-export function atualizarMassagista(id, nome, ativo) {
-  return getDb().prepare('UPDATE massagistas SET nome=?, ativo=? WHERE id=?').run(nome.trim(), ativo, id).changes;
+export function atualizarMassagista(id, nome, ativo, opts = {}) {
+  const sets = ['nome=?', 'ativo=?'];
+  const vals = [nome.trim(), ativo];
+  for (const k of ['matricula', 'especialidade_original', 'funcao', 'vinculo', 'disponibilidade']) {
+    if (opts[k] !== undefined) { sets.push(`${k}=?`); vals.push(opts[k]); }
+  }
+  if (opts.bilingue !== undefined) { sets.push('bilingue=?'); vals.push(opts.bilingue ? 1 : 0); }
+  vals.push(id);
+  return getDb().prepare(`UPDATE massagistas SET ${sets.join(', ')} WHERE id=?`).run(...vals).changes;
 }
 export function deletarMassagista(id) {
   return getDb().prepare('DELETE FROM massagistas WHERE id=?').run(id).changes;
