@@ -1001,6 +1001,7 @@ function calOpenModal(salaId, data, hora) {
   _resHoraFim = null;
   document.getElementById('res-inp-hora-inicio').value = _resHoraInicio;
   document.getElementById('res-tempo-val').textContent = 'selecione um tratamento';
+  document.getElementById('res-extra-info').innerHTML = '';
   if(data) document.getElementById('res-inp-data').value=data;
   document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',+b.dataset.sala===_resSala));
   loadTratamentosModal();
