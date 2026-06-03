@@ -957,6 +957,39 @@
 
     .btn-back:hover { border-color: var(--gold); color: var(--gold); }
 
+    .page-nav-row {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-home {
+      background: var(--gold);
+      border: 1px solid var(--gold-dark);
+      color: var(--surface);
+      font-family: var(--font);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0.4375rem 0.875rem 0.4375rem 0.7rem;
+      transition: all .15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 0.625rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-home:hover {
+      background: var(--gold-dark);
+      border-color: var(--gold-dark);
+      box-shadow: 0 2px 8px rgba(212,149,61,.3);
+    }
+    .btn-home svg { flex-shrink: 0; }
+
     .page-hero-eyebrow {
       display: flex;
       align-items: baseline;
