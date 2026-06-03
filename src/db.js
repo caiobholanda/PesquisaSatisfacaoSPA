@@ -398,6 +398,30 @@ export function listarReservasSemana(from, to) {
   ).all(from, to);
 }
 
+export function listarTodasReservas({ from, to, sala, busca, limit = 100, offset = 0 } = {}) {
+  const db = getDb();
+  const conds = [];
+  const params = [];
+  if (from)   { conds.push('r.data >= ?');   params.push(from); }
+  if (to)     { conds.push('r.data <= ?');   params.push(to); }
+  if (sala)   { conds.push('r.sala = ?');    params.push(+sala); }
+  if (busca)  { conds.push('(LOWER(r.cliente) LIKE ? OR LOWER(r.email) LIKE ?)'); params.push(`%${busca.toLowerCase()}%`, `%${busca.toLowerCase()}%`); }
+  const where = conds.length ? 'WHERE ' + conds.join(' AND ') : '';
+  const total = db.prepare(`SELECT COUNT(*) AS t FROM reservas r ${where}`).get(...params).t;
+  const items = db.prepare(`
+    SELECT r.*,
+      m.nome AS massoterapeuta_nome,
+      t.nome AS tipo_massagem_nome
+    FROM reservas r
+    LEFT JOIN massagistas m ON m.id = r.massagista_id
+    LEFT JOIN tipos_massagem t ON t.id = r.tipo_massagem_id
+    ${where}
+    ORDER BY r.data DESC, r.hora_inicio DESC
+    LIMIT ? OFFSET ?
+  `).all(...params, limit, offset);
+  return { total, items };
+}
+
 export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, opts = {}) {
   const { linha = null, tipo_massagem_id = null, massagista_id = null } = opts;
   const db = getDb();
