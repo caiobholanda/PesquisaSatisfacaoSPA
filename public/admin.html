@@ -2091,6 +2091,19 @@
     /* ── Modal Detalhes Reserva — premium ── */
     #resdet-overlay .res-modal { max-width: 740px; }
 
+    .resdet-ft {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 1.75rem 1.4rem; gap: .75rem;
+      border-top: 1px solid var(--border-soft);
+      flex-wrap: wrap;
+    }
+    .resdet-ft-left { display: flex; }
+    .resdet-ft-right { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .resdet-btn-danger { color: var(--danger) !important; border-color: var(--danger) !important; }
+    .resdet-btn-danger:hover:not(:disabled) { background: var(--danger-dim) !important; }
+    .resdet-btn-gold { border-color: var(--gold) !important; color: var(--gold) !important; }
+    .resdet-btn-gold:hover:not(:disabled) { background: var(--gold-dim) !important; }
+
     .resdet-sala-badge {
       display: inline-flex; align-items: center; gap: .45rem;
       padding: .3rem .75rem; border-radius: 999px;
@@ -2929,10 +2942,12 @@
     <div class="res-modal-body" id="resdet-body" style="max-height:75vh">
       <!-- preenchido por JS -->
     </div>
-    <div class="res-modal-ft" style="justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-      <button class="btn btn-outline" id="resdet-cancelar-res" style="color:var(--danger);border-color:var(--danger)">Cancelar Reserva</button>
-      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-outline" id="resdet-ficha" data-action="enviar-pre-massagem" data-id="" style="border-color:var(--gold);color:var(--gold)">Enviar Ficha</button>
+    <div class="resdet-ft">
+      <div class="resdet-ft-left">
+        <button class="btn btn-outline resdet-btn-danger" id="resdet-cancelar-res">Cancelar Reserva</button>
+      </div>
+      <div class="resdet-ft-right">
+        <button class="btn btn-outline resdet-btn-gold" id="resdet-ficha" data-action="enviar-pre-massagem" data-id="">Enviar Ficha</button>
         <button class="btn btn-outline" id="resdet-liberar" data-action="liberar-pesquisa" data-id="">Liberar Pesquisa</button>
         <button class="btn btn-gold" id="resdet-fechar">Fechar</button>
       </div>

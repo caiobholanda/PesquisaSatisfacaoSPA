@@ -524,10 +524,10 @@ function _aplicarEstadoLiberada(btn, estado) {
     btn.style.cursor = 'default';
     btn.style.fontSize = '';
   } else if (estado === 'fora_prazo') {
-    btn.textContent = 'Não é mais permitido preencher a pesquisa de satisfação';
+    btn.textContent = 'Prazo encerrado';
     btn.style.opacity = '0.45';
     btn.style.cursor = 'default';
-    btn.style.fontSize = '.78rem';
+    btn.style.fontSize = '';
   } else {
     btn.textContent = 'Liberar Pesquisa';
     btn.style.opacity = '';
@@ -1671,7 +1671,8 @@ function calVerDetalhes(id) {
   const inicioMs = new Date(`${r.data}T${r.hora_inicio}:00`).getTime();
   const cancelBloqueado = Date.now() > inicioMs + 30 * 60 * 1000;
   btnCancel.disabled = cancelBloqueado;
-  btnCancel.title = cancelBloqueado ? 'Cancelamento não permitido após 30 min do início' : '';
+  btnCancel.textContent = cancelBloqueado ? 'Cancelamento expirado' : 'Cancelar Reserva';
+  btnCancel.title = cancelBloqueado ? 'Só é possível cancelar até 30 min após o início' : '';
   btnCancel.style.opacity = cancelBloqueado ? '0.4' : '';
   btnCancel.style.cursor = cancelBloqueado ? 'default' : '';
   btnCancel.onclick = cancelBloqueado ? null : () => {
