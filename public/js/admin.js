@@ -1107,7 +1107,7 @@ const CAL_ROOMS = [
 ];
 const CAL_H_START = 8;
 const CAL_H_END   = 22;
-const CAL_SLOT_PX = 64;
+const CAL_SLOT_PX = 76;
 const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 let _reservas  = [];

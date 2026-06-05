@@ -1411,6 +1411,14 @@
       color: var(--text);
     }
 
+    /* Header compacto só na tela de reservas */
+    #view-reservas .page-hero {
+      margin-bottom: .9rem;
+      padding-bottom: .75rem;
+    }
+    #view-reservas .page-title { font-size: 1.5rem; letter-spacing: .08em; }
+    #view-reservas .page-sub   { font-size: .74rem; margin-top: .15rem; }
+
     /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        RESERVAS — CALENDAR
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -1433,9 +1441,9 @@
 
     .cal-toolbar {
       display: flex; align-items: center; gap: .5rem;
-      margin-bottom: 1.25rem; flex-wrap: wrap;
+      margin-bottom: .75rem; flex-wrap: wrap;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: .6rem .9rem;
+      border-radius: 12px; padding: .45rem .75rem;
       box-shadow: 0 2px 12px rgba(0,0,0,.04);
     }
 
@@ -1568,8 +1576,8 @@
     /* ── Scroll ── */
     .cal-scroll {
       overflow-y: auto;
-      max-height: calc(100vh - 290px);
-      min-height: 380px;
+      max-height: calc(100vh - 240px);
+      min-height: 400px;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
@@ -1601,7 +1609,7 @@
       padding: 0 .75rem; display: flex; align-items: flex-start;
       justify-content: flex-end; padding-top: 7px;
       font-size: .62rem; font-family: var(--mono); color: var(--muted);
-      height: 64px; border-bottom: 1px solid var(--border-soft);
+      height: 76px; border-bottom: 1px solid var(--border-soft);
       border-right: 1px solid var(--border);
       background: var(--surface); position: sticky; left: 0;
     }
@@ -1610,7 +1618,7 @@
 
     /* ── Slots ── */
     .cal-slot {
-      height: 64px; border-right: 1px solid var(--border-soft);
+      height: 76px; border-right: 1px solid var(--border-soft);
       border-bottom: 1px solid var(--border-soft);
       cursor: pointer; transition: background .1s;
       position: relative; overflow: visible;
