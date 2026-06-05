@@ -412,6 +412,20 @@ function showView(id) {
   if (homeBtn) homeBtn.style.display = (id === 'view-reservas') ? 'none' : '';
 }
 
+// ── Toast ──
+function showToast(msg, duration = 4000) {
+  let el = document.getElementById('_admin-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_admin-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), duration);
+}
+
 // ── Liberar Pesquisa de Satisfação ──
 async function liberarPesquisaReserva(id) {
   const btn = document.getElementById('resdet-liberar');
@@ -421,18 +435,8 @@ async function liberarPesquisaReserva(id) {
     if (!res) return;
     const d = await res.json();
     if (!d.ok) { alert('Erro ao gerar link: ' + (d.error || '')); return; }
-
-    const raw = (d.telefone || '').replace(/\D/g, '');
-    const phone = raw.startsWith('55') ? raw : '55' + raw;
-    const nome = escHtml(d.nome || 'hóspede');
-    const msg = `Olá, *${d.nome || 'hóspede'}*! 😊\n\nGostaríamos de conhecer sua experiência no *Gran SPA by L'Occitane* — Hotel Gran Marquise.\n\nSua avaliação é muito importante para nós! 🌿\n\n👉 ${d.url}`;
-
-    if (raw) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    } else {
-      try { await navigator.clipboard.writeText(d.url); } catch {}
-      alert(`Link gerado!\n\n${d.url}\n\n(Copiado para a área de transferência)`);
-    }
+    try { await navigator.clipboard.writeText(d.url); } catch {}
+    showToast(`Link copiado! ${d.url}`);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Liberar Pesquisa'; }
   }

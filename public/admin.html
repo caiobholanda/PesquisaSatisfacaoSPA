@@ -2121,6 +2121,16 @@
       color: var(--gold-dark);
     }
 
+    /* Toast */
+    #_admin-toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(8px);
+      background: var(--surface); border: 1px solid var(--gold); color: var(--text);
+      padding: .7rem 1.25rem; border-radius: 8px; font-size: .82rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.18); opacity: 0; pointer-events: none;
+      transition: opacity .22s, transform .22s; z-index: 9999; max-width: 90vw; word-break: break-all;
+    }
+    #_admin-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+
     /* Modal idioma pré-massagem */
     .lang-card {
       display: flex; align-items: center; gap: .65rem;
