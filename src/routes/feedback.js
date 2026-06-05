@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { inserirFeedback, listarFeedback, getFeedbackById, statsFeedback, exportarCsv } from '../db.js';
+import { inserirFeedback, listarFeedback, getFeedbackById, statsFeedback, exportarCsv, marcarSurveyTokenRespondido } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -77,6 +77,7 @@ router.post('/', rateLimit, (req, res) => {
     submitted_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
   });
 
+  try { marcarSurveyTokenRespondido(); } catch {}
   return res.status(201).json({ ok: true, id });
 });
 

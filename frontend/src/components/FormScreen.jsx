@@ -12,7 +12,9 @@ function FieldErr({ msg }) {
   return msg ? <p className="field-err" role="alert">{msg}</p> : null;
 }
 
-export default function FormScreen({ visible, onSubmit, onBack, prefill = null }) {
+const TIME_LIMIT = 15 * 60 * 1000;
+
+export default function FormScreen({ visible, onSubmit, onBack, prefill = null, formStart = null, onTimeout }) {
   const [loading,   setLoading]   = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [massagistasOpts, setMassagistasOpts] = useState([]);
@@ -36,6 +38,7 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null }
   const [fills,         setFills]         = useState([0, 0, 0, 0]);
   const [submitting,    setSubmitting]    = useState(false);
   const [submitError,   setSubmitError]   = useState('');
+  const [timeLeft,      setTimeLeft]      = useState(TIME_LIMIT);
 
   const load = () => {
     setLoading(true);
@@ -53,6 +56,18 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null }
   };
 
   useEffect(load, []);
+
+  useEffect(() => {
+    if (!formStart) return;
+    const tick = () => {
+      const remaining = Math.max(0, TIME_LIMIT - (Date.now() - formStart));
+      setTimeLeft(remaining);
+      if (remaining === 0 && onTimeout) onTimeout();
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [formStart]);
 
   const set = (k, v) => setFields((f) => ({ ...f, [k]: v }));
   const pick = (id, v) => setRatings((r) => ({ ...r, [id]: v }));
@@ -170,6 +185,9 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null }
             </svg>
             Voltar
           </button>
+          <div className={`timer-display${timeLeft < 2 * 60 * 1000 ? ' urgent' : ''}`} aria-live="polite" aria-label="Tempo restante">
+            {String(Math.floor(timeLeft / 60000)).padStart(2, '0')}:{String(Math.floor((timeLeft % 60000) / 1000)).padStart(2, '0')}
+          </div>
         </div>
         <div className="progress-inner" aria-hidden="true">
           {fills.map((f, i) => (

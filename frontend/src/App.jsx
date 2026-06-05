@@ -8,6 +8,8 @@ export default function App() {
   const [visible,      setVisible]      = useState(true);
   const [tokenData,    setTokenData]    = useState(null);
   const [tokenChecked, setTokenChecked] = useState(false);
+  const [submitted,    setSubmitted]    = useState(false);
+  const [formStart,    setFormStart]    = useState(null);
   const pollRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +24,6 @@ export default function App() {
       return;
     }
 
-    // Sem token na URL: polling para liberar em tempo real
     setTokenChecked(true);
     pollRef.current = setInterval(() => {
       fetch('/api/survey/live')
@@ -39,23 +40,28 @@ export default function App() {
     return () => clearInterval(pollRef.current);
   }, []);
 
-  // Para o polling quando o hóspede começa a preencher
   useEffect(() => {
     if (screen !== 'welcome') clearInterval(pollRef.current);
   }, [screen]);
 
-  const go = (next) => {
+  const go = (next, opts = {}) => {
     setVisible(false);
-    setTimeout(() => { setScreen(next); window.scrollTo(0, 0); setVisible(true); }, 600);
+    setTimeout(() => {
+      setScreen(next);
+      window.scrollTo(0, 0);
+      setVisible(true);
+      if (next === 'form') setFormStart(Date.now());
+      if (opts.afterSubmit) { setSubmitted(true); setTokenData(null); }
+    }, 600);
   };
 
   if (!tokenChecked) return null;
 
   return (
     <div className="app-root">
-      {screen === 'welcome' && <WelcomeScreen      visible={visible} onStart={() => go('form')}    tokenData={tokenData} />}
-      {screen === 'form'    && <FormScreen         visible={visible} onSubmit={() => go('confirm')} onBack={() => go('welcome')} prefill={tokenData} />}
-      {screen === 'confirm' && <ConfirmationScreen visible={visible} onRestart={() => go('welcome')} />}
+      {screen === 'welcome' && <WelcomeScreen      visible={visible} onStart={() => go('form')}    tokenData={tokenData} submitted={submitted} />}
+      {screen === 'form'    && <FormScreen         visible={visible} onSubmit={() => go('confirm')} onBack={() => go('welcome')} prefill={tokenData} formStart={formStart} onTimeout={() => go('welcome')} />}
+      {screen === 'confirm' && <ConfirmationScreen visible={visible} onRestart={() => go('welcome', { afterSubmit: true })} />}
     </div>
   );
 }

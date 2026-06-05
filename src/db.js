@@ -162,6 +162,8 @@ export function initDb() {
   }
   // Migration: add liberada_em to survey_tokens
   try { db.exec(`ALTER TABLE survey_tokens ADD COLUMN liberada_em TEXT`); } catch {}
+  // Migration: add respondida_em to survey_tokens
+  try { db.exec(`ALTER TABLE survey_tokens ADD COLUMN respondida_em TEXT`); } catch {}
 
   // Migration: spa pre-treatment document token fields
   for (const col of ['documento_token TEXT', 'documento_token_expiry TEXT', 'idioma_documento TEXT', 'documento_enviado_em TEXT', 'documento_perfil_id INTEGER']) {
@@ -548,9 +550,23 @@ export function buscarSurveyTokenAtivo() {
     JOIN reservas r ON r.id = st.reserva_id
     LEFT JOIN massagistas m ON m.id = r.massagista_id
     WHERE st.liberada_em IS NOT NULL
+      AND st.respondida_em IS NULL
       AND st.liberada_em >= datetime('now', '-60 minutes')
     ORDER BY st.liberada_em DESC LIMIT 1
   `).get() || null;
+}
+
+export function marcarSurveyTokenRespondido() {
+  getDb().prepare(`
+    UPDATE survey_tokens SET respondida_em = datetime('now')
+    WHERE token = (
+      SELECT token FROM survey_tokens
+      WHERE respondida_em IS NULL
+        AND liberada_em IS NOT NULL
+        AND liberada_em >= datetime('now', '-60 minutes')
+      ORDER BY liberada_em DESC LIMIT 1
+    )
+  `).run();
 }
 
 export function buscarSurveyToken(token) {
