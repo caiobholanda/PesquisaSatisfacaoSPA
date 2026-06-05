@@ -427,17 +427,29 @@ function showToast(msg, duration = 4000) {
 }
 
 // ── Liberar Pesquisa de Satisfação ──
+const _pesquisasLiberadas = new Set();
+
+function _aplicarEstadoLiberada(btn, liberada) {
+  if (!btn) return;
+  btn.disabled = liberada;
+  btn.textContent = liberada ? 'PESQUISA JÁ LIBERADA' : 'Liberar Pesquisa';
+  btn.style.opacity = liberada ? '0.55' : '';
+  btn.style.cursor  = liberada ? 'default' : '';
+}
+
 async function liberarPesquisaReserva(id) {
   const btn = document.getElementById('resdet-liberar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Gerando…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Liberando…'; }
   try {
     const res = await api(`/api/reservas/${id}/liberar-pesquisa`, { method: 'POST', body: '{}' });
-    if (!res) return;
+    if (!res) { _aplicarEstadoLiberada(btn, false); return; }
     const d = await res.json();
-    if (!d.ok) { alert('Erro ao liberar pesquisa: ' + (d.error || '')); return; }
+    if (!d.ok) { alert('Erro ao liberar pesquisa: ' + (d.error || '')); _aplicarEstadoLiberada(btn, false); return; }
+    _pesquisasLiberadas.add(id);
+    _aplicarEstadoLiberada(btn, true);
     showToast('✓ Pesquisa liberada — o botão já apareceu na tela do hóspede');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Liberar Pesquisa'; }
+  } catch {
+    _aplicarEstadoLiberada(btn, false);
   }
 }
 
@@ -1417,7 +1429,7 @@ function calVerDetalhes(id) {
   if (!r) return;
   _resDetAtual = r;
   const btnLib = document.getElementById('resdet-liberar');
-  if (btnLib) btnLib.dataset.id = r.id;
+  if (btnLib) { btnLib.dataset.id = r.id; _aplicarEstadoLiberada(btnLib, _pesquisasLiberadas.has(r.id)); }
   const btnFicha = document.getElementById('resdet-ficha');
   if (btnFicha) btnFicha.dataset.id = r.id;
   const sala = CAL_ROOMS.find(s => s.id === r.sala);
