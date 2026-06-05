@@ -523,7 +523,7 @@ function renderMassagistas() {
     const badges = [];
     if (m.matricula) badges.push(`<span class="mgmt-badge mgmt-badge-mat">Mat. ${escHtml(m.matricula)}</span>`);
     if (m.vinculo) badges.push(`<span class="mgmt-badge mgmt-badge-vinculo">${escHtml(m.vinculo)}</span>`);
-    if (m.bilingue) badges.push(`<span class="mgmt-badge mgmt-badge-bilingue">🌍 Bilíngue</span>`);
+    if (m.bilingue) badges.push(`<span class="mgmt-badge mgmt-badge-bilingue">Bilíngue</span>`);
     return `
       <div class="mgmt-item${m.ativo ? '' : ' mgmt-item-inativo'}">
         <div class="mgmt-item-info">
@@ -950,7 +950,7 @@ function _renderMassagistasModal() {
     return;
   }
   sel.innerHTML = '<option value="">— Selecione —</option>' +
-    lista.map(m => `<option value="${m.id}" data-bilingue="${m.bilingue?1:0}" data-vinculo="${m.vinculo||''}">${m.nome}${m.bilingue?' 🌍':''}${m.vinculo?` · ${m.vinculo}`:''}</option>`).join('');
+    lista.map(m => `<option value="${m.id}" data-bilingue="${m.bilingue?1:0}" data-vinculo="${m.vinculo||''}">${m.nome}${m.vinculo?` · ${m.vinculo}`:''}</option>`).join('');
 }
 
 async function loadTratamentosModal() {
@@ -1309,7 +1309,7 @@ function _renderResDetMassagista(r) {
   const m = _massagistasModal.find(x => x.id === r.massagista_id);
   if (!m) return `<div class="resdet-row"><span class="resdet-label">Profissional</span><span class="resdet-value mono">#${r.massagista_id}</span></div>`;
   const badges = [];
-  if (m.bilingue) badges.push('<span style="display:inline-block;background:rgba(91,103,150,.12);color:var(--indigo);padding:.12rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.4rem">🌍 Bilíngue</span>');
+  if (m.bilingue) badges.push('<span style="display:inline-block;background:rgba(91,103,150,.12);color:var(--indigo);padding:.12rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.4rem">Bilíngue</span>');
   if (m.vinculo) badges.push(`<span style="display:inline-block;background:var(--gold-dim);color:var(--gold-dark);padding:.12rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.3rem">${escHtml(m.vinculo)}</span>`);
   return `<div class="resdet-row"><span class="resdet-label">Profissional</span><span class="resdet-value">${escHtml(m.nome)}${badges.join('')}</span></div>`;
 }
