@@ -96,13 +96,11 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null, 
 
   const handleSubmit = async () => {
     const errs = {};
-    if (!fields.nome.trim()) errs.nome = 'Nome é obrigatório.';
-    if (!isEmail(fields.email)) errs.email = 'Informe um e-mail válido.';
     if (fields.tel.trim() && !isTel(fields.tel)) errs.tel = 'Telefone inválido.';
-    if (!clientType) errs.clientType = 'Selecione o tipo de cliente.';
+    if (fields.email.trim() && !isEmail(fields.email)) errs.email = 'E-mail inválido.';
     setErrors(errs);
     if (Object.keys(errs).length) {
-      const refs = [['nome', refNome], ['email', refEmail], ['clientType', refClient]];
+      const refs = [['email', refEmail]];
       const first = refs.find(([k]) => errs[k]);
       if (first?.[1].current) {
         const y = first[1].current.getBoundingClientRect().top + window.scrollY - 130;
@@ -212,12 +210,12 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null, 
         <section className="enter" style={{ animationDelay: '180ms' }}>
           <div className="field-grid">
             <div className={'field' + (errors.nome ? ' error' : '')} ref={refNome}>
-              <FieldLabel htmlFor="f-nome" pt="Nome *" en="Name" />
+              <FieldLabel htmlFor="f-nome" pt="Nome" en="Name" />
               <input
                 id="f-nome"
                 value={fields.nome}
                 onChange={(e) => set('nome', e.target.value)}
-                onBlur={() => { if (!fields.nome.trim()) setErrors(e => ({ ...e, nome: 'Nome é obrigatório.' })); else setErrors(e => { const n = { ...e }; delete n.nome; return n; }); }}
+
                 aria-describedby={errors.nome ? 'err-nome' : undefined}
                 aria-required="true"
               />
@@ -230,15 +228,14 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null, 
               <span className="fill"></span>
             </div>
             <div className={'field' + (errors.email ? ' error' : '')} ref={refEmail}>
-              <FieldLabel htmlFor="f-email" pt="E-mail *" en="E-mail" />
+              <FieldLabel htmlFor="f-email" pt="E-mail" en="E-mail" />
               <input
                 id="f-email"
                 type="email"
                 value={fields.email}
                 onChange={(e) => set('email', e.target.value)}
-                onBlur={() => { if (!isEmail(fields.email)) setErrors(e => ({ ...e, email: 'Informe um e-mail válido.' })); else setErrors(e => { const n = { ...e }; delete n.email; return n; }); }}
+                onBlur={() => { if (fields.email.trim() && !isEmail(fields.email)) setErrors(e => ({ ...e, email: 'E-mail inválido.' })); else setErrors(e => { const n = { ...e }; delete n.email; return n; }); }}
                 aria-describedby={errors.email ? 'err-email' : undefined}
-                aria-required="true"
               />
               <span className="fill"></span>
               <FieldErr msg={errors.email} />
@@ -334,13 +331,12 @@ export default function FormScreen({ visible, onSubmit, onBack, prefill = null, 
         </section>
 
         <section ref={secRefs[3]}>
-          <SectionHeading num="4" pt="Tipo de cliente *" en="Type of guest" />
-          <div ref={refClient} className="client-type" role="group" aria-label="Tipo de cliente" aria-required="true">
+          <SectionHeading num="4" pt="Tipo de cliente" en="Type of guest" />
+          <div ref={refClient} className="client-type" role="group" aria-label="Tipo de cliente">
             <RadioOption checked={clientType === 'lazer'}    onClick={() => setClientType('lazer')}    pt="Lazer"    en="Leisure" />
             <RadioOption checked={clientType === 'negocios'} onClick={() => setClientType('negocios')} pt="Negócios" en="Business" />
             <RadioOption checked={clientType === 'evento'}   onClick={() => setClientType('evento')}   pt="Evento"   en="Event" />
           </div>
-          {errors.clientType && <div className="err-msg" role="alert">{errors.clientType} / Please select a guest type.</div>}
         </section>
 
         <footer className="form-foot">

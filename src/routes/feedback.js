@@ -39,10 +39,7 @@ function validarEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 router.post('/', rateLimit, (req, res) => {
   const b = req.body || {};
 
-  if (!b.nome?.trim()) return res.status(400).json({ ok: false, error: 'Nome é obrigatório' });
-  if (!b.email?.trim()) return res.status(400).json({ ok: false, error: 'E-mail é obrigatório' });
-  if (!validarEmail(b.email)) return res.status(400).json({ ok: false, error: 'E-mail inválido' });
-  if (!b.tipo_cliente?.trim()) return res.status(400).json({ ok: false, error: 'Tipo de cliente é obrigatório' });
+  if (b.email?.trim() && !validarEmail(b.email)) return res.status(400).json({ ok: false, error: 'E-mail inválido' });
   if (!['hospede', 'colaborador'].includes(b.origem))
     return res.status(400).json({ ok: false, error: 'Origem inválida' });
 
