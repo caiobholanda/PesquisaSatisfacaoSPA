@@ -104,6 +104,29 @@ export function initDb() {
       criado_em TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_survey_tokens_token ON survey_tokens(token);
+
+    CREATE TABLE IF NOT EXISTS spa_perfis (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      sobrenome TEXT NOT NULL,
+      tipo_documento TEXT NOT NULL DEFAULT 'cpf',
+      documento TEXT NOT NULL,
+      email TEXT NOT NULL,
+      telefone TEXT NOT NULL,
+      data_nascimento TEXT,
+      rotina_facial TEXT,
+      rotina_corporal TEXT,
+      produto_especifico TEXT,
+      pressao_massagem TEXT,
+      info_medica TEXT NOT NULL DEFAULT '',
+      consentimento_saude INTEGER NOT NULL DEFAULT 0,
+      consentimento_marketing INTEGER NOT NULL DEFAULT 0,
+      canais_marketing TEXT,
+      assinatura_data_url TEXT,
+      idioma TEXT DEFAULT 'pt-BR',
+      reserva_id INTEGER,
+      criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   // Migration: add descricao column to tipos_massagem if absent
@@ -134,6 +157,10 @@ export function initDb() {
   }
   // Migration: add enriched fields to reservas if absent
   for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER', 'massagista_id INTEGER']) {
+    try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
+  }
+  // Migration: spa pre-treatment document token fields
+  for (const col of ['documento_token TEXT', 'documento_token_expiry TEXT', 'idioma_documento TEXT', 'documento_enviado_em TEXT', 'documento_perfil_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
   }
 
@@ -546,4 +573,48 @@ export function deletarAdmin(id) {
 export function exportarCsv({ origem, tipo_cliente, from, to } = {}) {
   const { items } = listarFeedback({ origem, tipo_cliente, from, to, limit: 9999, offset: 0 });
   return items;
+}
+
+// ── SPA Pre-treatment form ──
+export function gerarDocumentoToken(reservaId) {
+  const token = randomBytes(24).toString('hex');
+  const expiry = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  getDb().prepare(
+    `UPDATE reservas SET documento_token=?, documento_token_expiry=?, documento_enviado_em=datetime('now') WHERE id=?`
+  ).run(token, expiry, reservaId);
+  return token;
+}
+
+export function buscarDocumentoToken(token) {
+  return getDb().prepare(`
+    SELECT r.id AS reserva_id, r.cliente AS hospede_nome, r.email AS hospede_email,
+           r.tratamento AS servico, r.idioma_documento AS locale
+    FROM reservas r
+    WHERE r.documento_token = ? AND (r.documento_token_expiry IS NULL OR r.documento_token_expiry > datetime('now'))
+  `).get(token) || null;
+}
+
+export function inserirSpaPerfil(dados) {
+  const { nome, sobrenome, tipo_documento, documento, email, telefone, data_nascimento,
+          rotina_facial, rotina_corporal, produto_especifico, pressao_massagem, info_medica,
+          consentimento_saude, consentimento_marketing, canais_marketing, assinatura_data_url,
+          idioma, reserva_id } = dados;
+  const r = getDb().prepare(`
+    INSERT INTO spa_perfis (nome, sobrenome, tipo_documento, documento, email, telefone, data_nascimento,
+      rotina_facial, rotina_corporal, produto_especifico, pressao_massagem, info_medica,
+      consentimento_saude, consentimento_marketing, canais_marketing, assinatura_data_url, idioma, reserva_id)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+  `).run(nome, sobrenome, tipo_documento || 'cpf', documento || '', email, telefone,
+         data_nascimento || null, rotina_facial || null, rotina_corporal || null,
+         produto_especifico || null, pressao_massagem || null, info_medica || '',
+         consentimento_saude ? 1 : 0, consentimento_marketing ? 1 : 0,
+         canais_marketing || null, assinatura_data_url || null, idioma || 'pt-BR', reserva_id || null);
+  if (reserva_id) {
+    getDb().prepare('UPDATE reservas SET documento_perfil_id=? WHERE id=?').run(r.lastInsertRowid, reserva_id);
+  }
+  return r.lastInsertRowid;
+}
+
+export function vincularDocumentoToken(reservaId, locale) {
+  try { getDb().prepare('UPDATE reservas SET idioma_documento=? WHERE id=?').run(locale, reservaId); } catch {}
 }

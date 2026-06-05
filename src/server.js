@@ -11,6 +11,7 @@ import authRouter from './routes/auth.js';
 import cadastrosRouter from './routes/cadastros.js';
 import reservasRouter from './routes/reservas.js';
 import devRouter from './routes/dev.js';
+import spaRouter from './routes/spa.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -100,6 +101,7 @@ app.get('/api/survey/:token', (req, res) => {
   });
 });
 
+app.use('/api/spa', spaRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/reservas', reservasRouter);

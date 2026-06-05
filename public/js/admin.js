@@ -1489,19 +1489,29 @@ const _closeLangOverlay = () => { document.getElementById('lang-overlay').style.
 document.getElementById('lang-x').addEventListener('click', _closeLangOverlay);
 document.getElementById('lang-cancelar').addEventListener('click', _closeLangOverlay);
 document.getElementById('lang-overlay').addEventListener('click', e => { if (e.target.id === 'lang-overlay') _closeLangOverlay(); });
-document.getElementById('lang-confirmar').addEventListener('click', () => {
+document.getElementById('lang-confirmar').addEventListener('click', async () => {
   const r = _resDetAtual;
   if (!r) return;
-  const url = `https://sistema-chamados-granmarquise.fly.dev/spa-profile.html?lang=${_langSelected}`;
-  const raw = (r.telefone || '').replace(/\D/g, '');
-  const phone = raw.startsWith('55') ? raw : '55' + raw;
-  const msg = `Olá, *${r.cliente || 'hóspede'}*! 😊\n\nPara prepararmos sua experiência no *Gran SPA by L'Occitane*, pedimos que preencha a ficha de saúde antes do seu tratamento:\n\n👉 ${url}\n\n*Hotel Gran Marquise* 🌿`;
-  _closeLangOverlay();
-  if (raw) {
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-  } else {
-    try { navigator.clipboard.writeText(url); } catch {}
-    alert(`Link gerado!\n\n${url}\n\n(Copiado para a área de transferência)`);
+  const btn = document.getElementById('lang-confirmar');
+  btn.disabled = true; btn.textContent = 'Gerando…';
+  try {
+    const res = await api(`/api/reservas/${r.id}/gerar-ficha`, { method: 'POST', body: '{}' });
+    if (!res) return;
+    const d = await res.json();
+    if (!d.ok) { alert('Erro ao gerar ficha: ' + (d.error || '')); return; }
+    const url = `${d.baseUrl}?t=${d.token}&lang=${_langSelected}`;
+    const raw = (r.telefone || '').replace(/\D/g, '');
+    const phone = raw.startsWith('55') ? raw : '55' + raw;
+    const msg = `Olá, *${r.cliente || 'hóspede'}*! 😊\n\nPara prepararmos sua experiência no *Gran SPA by L'Occitane*, pedimos que preencha a ficha de saúde antes do seu tratamento:\n\n👉 ${url}\n\n*Hotel Gran Marquise* 🌿`;
+    _closeLangOverlay();
+    if (raw) {
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    } else {
+      try { navigator.clipboard.writeText(url); } catch {}
+      showToast(`Link copiado! ${url}`);
+    }
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar via WhatsApp';
   }
 });
 
