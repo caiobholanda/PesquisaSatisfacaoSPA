@@ -525,8 +525,16 @@ export function buscarReservaById(id) {
 }
 
 export function criarSurveyToken(reservaId) {
+  const db = getDb();
+  const existente = db.prepare(
+    `SELECT token FROM survey_tokens WHERE reserva_id = ? ORDER BY criado_em DESC LIMIT 1`
+  ).get(reservaId);
+  if (existente) {
+    db.prepare(`UPDATE survey_tokens SET liberada_em = datetime('now') WHERE token = ?`).run(existente.token);
+    return existente.token;
+  }
   const token = randomBytes(24).toString('hex');
-  getDb().prepare(
+  db.prepare(
     `INSERT INTO survey_tokens (token, reserva_id, liberada_em) VALUES (?, ?, datetime('now'))`
   ).run(token, reservaId);
   return token;
