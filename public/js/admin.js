@@ -434,9 +434,8 @@ async function liberarPesquisaReserva(id) {
     const res = await api(`/api/reservas/${id}/liberar-pesquisa`, { method: 'POST', body: '{}' });
     if (!res) return;
     const d = await res.json();
-    if (!d.ok) { alert('Erro ao gerar link: ' + (d.error || '')); return; }
-    try { await navigator.clipboard.writeText(d.url); } catch {}
-    showToast(`Link copiado! ${d.url}`);
+    if (!d.ok) { alert('Erro ao liberar pesquisa: ' + (d.error || '')); return; }
+    showToast('✓ Pesquisa liberada — o botão já apareceu na tela do hóspede');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Liberar Pesquisa'; }
   }
