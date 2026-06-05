@@ -226,6 +226,13 @@ function avgRow(r) {
   if (!vals.length) return null;
   return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
 }
+// Média exclusiva da massoterapeuta: apenas os 4 campos de serviço
+function avgRowMass(r) {
+  const campos = ['servicos_expectativa','servicos_explicacao','servicos_atitude','servicos_tecnica'];
+  const vals = campos.map(c => NOTA_MAP[r[c]]).filter(v => v !== undefined && v !== null);
+  if (!vals.length) return null;
+  return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
+}
 function avgCampo(items, campo) {
   const vals = items.map(r => NOTA_MAP[r[campo]]).filter(v => v !== undefined && v !== null);
   if (!vals.length) return null;
@@ -922,7 +929,7 @@ window.showHistoricoMassagista = async (id, nome) => {
 
   const items = d.items || [];
   const total = items.length;
-  const avgs = items.map(avgRow).filter(v => v !== null).map(Number);
+  const avgs = items.map(avgRowMass).filter(v => v !== null).map(Number);
   const mediaGeral = avgs.length ? (avgs.reduce((a, b) => a + b, 0) / avgs.length).toFixed(2) : null;
   const recSim = items.filter(r => r.recomenda === 'sim').length;
   const pctRec = total > 0 ? (recSim / total * 100).toFixed(0) : null;
@@ -933,7 +940,7 @@ window.showHistoricoMassagista = async (id, nome) => {
       <div class="hist-kpi-val">${total}</div>
     </div>
     <div class="hist-kpi">
-      <div class="hist-kpi-label">Média geral</div>
+      <div class="hist-kpi-label">Média da profissional</div>
       <div class="hist-kpi-val" style="color:var(--gold)">${mediaGeral != null ? mediaGeral + ' / 9' : '—'}</div>
     </div>
     <div class="hist-kpi">
@@ -1031,7 +1038,7 @@ window.showHistoricoMassagista = async (id, nome) => {
         </thead>
         <tbody>
           ${items.map(r => {
-            const avg = avgRow(r);
+            const avg = avgRowMass(r);
             const recBadge = r.recomenda === 'sim'
               ? '<span class="badge badge-hospede">Sim</span>'
               : r.recomenda === 'nao'
