@@ -511,6 +511,28 @@ function showToast(msg, duration = 4000) {
 // ── Liberar Pesquisa de Satisfação ──
 const _pesquisasLiberadas = new Set();
 
+const _fichasEnviadas = new Set();
+
+function _estadoBtnFicha(r) {
+  if (_fichasEnviadas.has(r.id)) return 'enviada';
+  const inicio = new Date(`${r.data}T${r.hora_inicio}:00`).getTime();
+  if (Date.now() > inicio) return 'fora_prazo';
+  return 'ok';
+}
+
+function _aplicarEstadoBtnFicha(btn, estado) {
+  if (!btn) return;
+  btn.disabled = estado !== 'ok';
+  btn.dataset.estadoFicha = estado;
+  if (estado === 'enviada') {
+    btn.textContent = 'Ficha já enviada';
+  } else if (estado === 'fora_prazo') {
+    btn.textContent = 'Prazo encerrado';
+  } else {
+    btn.textContent = 'Enviar Ficha';
+  }
+}
+
 // estado: 'ok' | 'liberada' | 'fora_prazo'
 function _aplicarEstadoLiberada(btn, estado) {
   if (!btn) return;
@@ -555,6 +577,9 @@ async function liberarPesquisaReserva(id) {
 }
 
 function enviarPreMassagemReserva() {
+  if (!_resDetAtual) return;
+  const estado = _estadoBtnFicha(_resDetAtual);
+  if (estado !== 'ok') return;
   _langSelected = 'pt-BR';
   const grid = document.getElementById('lang-grid');
   grid.innerHTML = LANGS_PRE.map(l => `
@@ -1597,7 +1622,7 @@ function calVerDetalhes(id) {
   const btnLib = document.getElementById('resdet-liberar');
   if (btnLib) { btnLib.dataset.id = r.id; _aplicarEstadoLiberada(btnLib, _estadoBtnLiberar(r)); }
   const btnFicha = document.getElementById('resdet-ficha');
-  if (btnFicha) btnFicha.dataset.id = r.id;
+  if (btnFicha) { btnFicha.dataset.id = r.id; _aplicarEstadoBtnFicha(btnFicha, _estadoBtnFicha(r)); }
   const sala = CAL_ROOMS.find(s => s.id === r.sala);
   const salaName = sala ? sala.nome : `Sala ${r.sala}`;
   const salaCls = sala ? sala.cls : 's1';
@@ -1710,7 +1735,10 @@ document.getElementById('lang-confirmar').addEventListener('click', async () => 
     const raw = (r.telefone || '').replace(/\D/g, '');
     const phone = raw.startsWith('55') ? raw : '55' + raw;
     const msg = `Olá, *${r.cliente || 'hóspede'}*! 😊\n\nPara prepararmos sua experiência no *Gran SPA by L'Occitane*, pedimos que preencha a ficha de saúde antes do seu tratamento:\n\n👉 ${url}\n\n*Hotel Gran Marquise* 🌿`;
+    _fichasEnviadas.add(r.id);
     _closeLangOverlay();
+    const btnFicha = document.getElementById('resdet-ficha');
+    _aplicarEstadoBtnFicha(btnFicha, 'enviada');
     if (raw) {
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     } else {
