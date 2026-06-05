@@ -1317,8 +1317,8 @@ function renderCalDia() {
   </div>`;
   document.getElementById('cal-grid').innerHTML=html;
 
-  // Linha de horário atual (somente se dia selecionado = hoje)
-  calUpdateNowLine(ds);
+  // Linha de horário atual — scroll automático ao horário atual se for hoje
+  calUpdateNowLine(ds, true);
 }
 
 window.calCancelar=async(id)=>{
@@ -1328,7 +1328,7 @@ window.calCancelar=async(id)=>{
 };
 
 let _nowLineInterval = null;
-function calUpdateNowLine(ds) {
+function calUpdateNowLine(ds, scrollIntoView = false) {
   const grid = document.getElementById('cal-grid');
   if (!grid) return;
   const existing = grid.querySelector('.cal-now-line');
@@ -1345,6 +1345,13 @@ function calUpdateNowLine(ds) {
   line.style.top = topPx + 'px';
   line.innerHTML = `<span class="cal-now-lbl">${timeStr}</span>`;
   grid.appendChild(line);
+  if (scrollIntoView) {
+    const scroll = document.querySelector('.cal-scroll');
+    if (scroll) {
+      const offset = Math.max(0, topPx - scroll.clientHeight / 2 + CAL_SLOT_PX);
+      scroll.scrollTo({ top: offset, behavior: 'smooth' });
+    }
+  }
 }
 function _startNowLineInterval() {
   if (_nowLineInterval) clearInterval(_nowLineInterval);
