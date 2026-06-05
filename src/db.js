@@ -101,6 +101,7 @@ export function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       token TEXT UNIQUE NOT NULL,
       reserva_id INTEGER NOT NULL,
+      liberada_em TEXT,
       criado_em TEXT NOT NULL DEFAULT (datetime('now'))
     );
     CREATE INDEX IF NOT EXISTS idx_survey_tokens_token ON survey_tokens(token);
@@ -159,6 +160,9 @@ export function initDb() {
   for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER', 'massagista_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
   }
+  // Migration: add liberada_em to survey_tokens
+  try { db.exec(`ALTER TABLE survey_tokens ADD COLUMN liberada_em TEXT`); } catch {}
+
   // Migration: spa pre-treatment document token fields
   for (const col of ['documento_token TEXT', 'documento_token_expiry TEXT', 'idioma_documento TEXT', 'documento_enviado_em TEXT', 'documento_perfil_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
@@ -522,8 +526,23 @@ export function buscarReservaById(id) {
 
 export function criarSurveyToken(reservaId) {
   const token = randomBytes(24).toString('hex');
-  getDb().prepare('INSERT INTO survey_tokens (token, reserva_id) VALUES (?, ?)').run(token, reservaId);
+  getDb().prepare(
+    `INSERT INTO survey_tokens (token, reserva_id, liberada_em) VALUES (?, ?, datetime('now'))`
+  ).run(token, reservaId);
   return token;
+}
+
+export function buscarSurveyTokenAtivo() {
+  return getDb().prepare(`
+    SELECT st.token, r.cliente, r.apto, r.email, r.telefone, r.data, r.tratamento,
+           r.tipo_cliente, m.nome AS massagista_nome
+    FROM survey_tokens st
+    JOIN reservas r ON r.id = st.reserva_id
+    LEFT JOIN massagistas m ON m.id = r.massagista_id
+    WHERE st.liberada_em IS NOT NULL
+      AND st.liberada_em >= datetime('now', '-60 minutes')
+    ORDER BY st.liberada_em DESC LIMIT 1
+  `).get() || null;
 }
 
 export function buscarSurveyToken(token) {
