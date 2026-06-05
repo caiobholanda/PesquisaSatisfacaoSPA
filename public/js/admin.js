@@ -511,16 +511,41 @@ function showToast(msg, duration = 4000) {
 // ── Liberar Pesquisa de Satisfação ──
 const _pesquisasLiberadas = new Set();
 
-function _aplicarEstadoLiberada(btn, liberada) {
+// estado: 'ok' | 'liberada' | 'fora_prazo'
+function _aplicarEstadoLiberada(btn, estado) {
   if (!btn) return;
-  btn.disabled = liberada;
-  btn.textContent = liberada ? 'PESQUISA JÁ LIBERADA' : 'Liberar Pesquisa';
-  btn.style.opacity = liberada ? '0.55' : '';
-  btn.style.cursor  = liberada ? 'default' : '';
+  if (estado === true) estado = 'liberada';
+  if (estado === false) estado = 'ok';
+  btn.disabled = estado !== 'ok';
+  btn.dataset.estado = estado;
+  if (estado === 'liberada') {
+    btn.textContent = 'PESQUISA JÁ LIBERADA';
+    btn.style.opacity = '0.55';
+    btn.style.cursor = 'default';
+    btn.style.fontSize = '';
+  } else if (estado === 'fora_prazo') {
+    btn.textContent = 'Não é mais permitido preencher a pesquisa de satisfação';
+    btn.style.opacity = '0.45';
+    btn.style.cursor = 'default';
+    btn.style.fontSize = '.78rem';
+  } else {
+    btn.textContent = 'Liberar Pesquisa';
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+    btn.style.fontSize = '';
+  }
+}
+
+function _estadoBtnLiberar(r) {
+  if (_pesquisasLiberadas.has(r.id)) return 'liberada';
+  const fim = new Date(`${r.data}T${r.hora_fim}:00`);
+  if (Date.now() > fim.getTime() + 45 * 60 * 1000) return 'fora_prazo';
+  return 'ok';
 }
 
 async function liberarPesquisaReserva(id) {
   const btn = document.getElementById('resdet-liberar');
+  if (btn?.dataset.estado === 'fora_prazo' || btn?.dataset.estado === 'liberada') return;
   if (btn) { btn.disabled = true; btn.textContent = 'Liberando…'; }
   try {
     const res = await api(`/api/reservas/${id}/liberar-pesquisa`, { method: 'POST', body: '{}' });
@@ -1524,7 +1549,7 @@ function calVerDetalhes(id) {
   if (!r) return;
   _resDetAtual = r;
   const btnLib = document.getElementById('resdet-liberar');
-  if (btnLib) { btnLib.dataset.id = r.id; _aplicarEstadoLiberada(btnLib, _pesquisasLiberadas.has(r.id)); }
+  if (btnLib) { btnLib.dataset.id = r.id; _aplicarEstadoLiberada(btnLib, _estadoBtnLiberar(r)); }
   const btnFicha = document.getElementById('resdet-ficha');
   if (btnFicha) btnFicha.dataset.id = r.id;
   const sala = CAL_ROOMS.find(s => s.id === r.sala);

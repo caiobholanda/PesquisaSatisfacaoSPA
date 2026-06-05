@@ -553,7 +553,7 @@ export function buscarSurveyTokenAtivo() {
     LEFT JOIN massagistas m ON m.id = r.massagista_id
     WHERE st.liberada_em IS NOT NULL
       AND st.respondida_em IS NULL
-      AND st.liberada_em >= datetime('now', '-60 minutes')
+      AND st.liberada_em >= datetime('now', '-15 minutes')
     ORDER BY st.liberada_em DESC LIMIT 1
   `).get() || null;
 }
@@ -565,7 +565,7 @@ export function marcarSurveyTokenRespondido() {
       SELECT token FROM survey_tokens
       WHERE respondida_em IS NULL
         AND liberada_em IS NOT NULL
-        AND liberada_em >= datetime('now', '-60 minutes')
+        AND liberada_em >= datetime('now', '-15 minutes')
       ORDER BY liberada_em DESC LIMIT 1
     )
   `).run();
