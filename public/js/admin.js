@@ -1611,7 +1611,7 @@ function renderCalDia() {
     const timeStr=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
     const isHour = mm === 0;
     const halfClass = isHour ? ' hour' : ' half';
-    html+=`<div class="cal-time-cell${halfClass}">${isHour ? timeStr : ''}</div>`;
+    html+=`<div class="cal-time-cell${halfClass}">${timeStr}</div>`;
     CAL_ROOMS.forEach(room=>{
       const res=dayRes.find(r=>r.sala===room.id&&calTimeMin(r.hora_inicio)<slotE&&calTimeMin(r.hora_fim)>slotS);
       if(res){
