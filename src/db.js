@@ -160,6 +160,10 @@ export function initDb() {
   for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER', 'massagista_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
   }
+  // Migration: campos pessoa 2 (casal)
+  for (const col of ['cliente2 TEXT','tipo_cliente2 TEXT','apto2 TEXT','email2 TEXT','telefone2 TEXT','tratamento2 TEXT','tipo_massagem_id2 INTEGER','massagista_id2 INTEGER']) {
+    try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
+  }
   // Migration: add liberada_em to survey_tokens
   try { db.exec(`ALTER TABLE survey_tokens ADD COLUMN liberada_em TEXT`); } catch {}
   // Migration: add respondida_em to survey_tokens
@@ -451,9 +455,10 @@ export function historicoMassagista(nome) {
 // ── Reservas ──
 export function listarReservasSemana(from, to) {
   return getDb().prepare(
-    `SELECT r.*, m.nome AS massagista_nome
+    `SELECT r.*, m.nome AS massagista_nome, m2.nome AS massagista_nome2
      FROM reservas r
-     LEFT JOIN massagistas m ON m.id = r.massagista_id
+     LEFT JOIN massagistas m  ON m.id  = r.massagista_id
+     LEFT JOIN massagistas m2 ON m2.id = r.massagista_id2
      WHERE r.data >= ? AND r.data <= ?
      ORDER BY r.data, r.hora_inicio`
   ).all(from, to);
@@ -484,7 +489,11 @@ export function listarTodasReservas({ from, to, sala, busca, limit = 100, offset
 }
 
 export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, opts = {}) {
-  const { linha = null, tipo_massagem_id = null, massagista_id = null, criado_por = null } = opts;
+  const {
+    linha = null, tipo_massagem_id = null, massagista_id = null, criado_por = null,
+    cliente2 = null, tipo_cliente2 = null, apto2 = null, email2 = null, telefone2 = null,
+    tratamento2 = null, tipo_massagem_id2 = null, massagista_id2 = null,
+  } = opts;
   const db = getDb();
 
   // Conflito de sala
@@ -500,13 +509,13 @@ export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefon
     throw e;
   }
 
-  // Conflito de massoterapeuta
+  // Conflito de massoterapeuta 1
   if (massagista_id) {
     const conflitoProf = db.prepare(`
       SELECT id, cliente, hora_inicio, hora_fim, sala FROM reservas
-      WHERE massagista_id = ? AND data = ?
+      WHERE (massagista_id = ? OR massagista_id2 = ?) AND data = ?
       AND NOT (hora_fim <= ? OR hora_inicio >= ?)
-    `).get(massagista_id, data, horaInicio, horaFim);
+    `).get(massagista_id, massagista_id, data, horaInicio, horaFim);
     if (conflitoProf) {
       const e = new Error('CONFLITO_PROF');
       e.code = 'CONFLITO_PROF';
@@ -515,10 +524,30 @@ export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefon
     }
   }
 
+  // Conflito de massoterapeuta 2 (casal)
+  if (massagista_id2) {
+    const conflitoProf2 = db.prepare(`
+      SELECT id, cliente, hora_inicio, hora_fim, sala FROM reservas
+      WHERE (massagista_id = ? OR massagista_id2 = ?) AND data = ?
+      AND NOT (hora_fim <= ? OR hora_inicio >= ?)
+    `).get(massagista_id2, massagista_id2, data, horaInicio, horaFim);
+    if (conflitoProf2) {
+      const e = new Error('CONFLITO_PROF');
+      e.code = 'CONFLITO_PROF';
+      e.conflito = conflitoProf2;
+      throw e;
+    }
+  }
+
   return db.prepare(
-    `INSERT INTO reservas (sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id, criado_por)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-  ).run(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, linha, tipo_massagem_id, massagista_id, criado_por).lastInsertRowid;
+    `INSERT INTO reservas (sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id, criado_por,
+       cliente2, tipo_cliente2, apto2, email2, telefone2, tratamento2, tipo_massagem_id2, massagista_id2)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+  ).run(
+    sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim,
+    linha, tipo_massagem_id, massagista_id, criado_por,
+    cliente2, tipo_cliente2, apto2, email2, telefone2, tratamento2, tipo_massagem_id2, massagista_id2
+  ).lastInsertRowid;
 }
 
 export function cancelarReserva(id) {
@@ -527,9 +556,10 @@ export function cancelarReserva(id) {
 
 export function buscarReservaById(id) {
   return getDb().prepare(`
-    SELECT r.*, m.nome AS massagista_nome
+    SELECT r.*, m.nome AS massagista_nome, m2.nome AS massagista_nome2
     FROM reservas r
-    LEFT JOIN massagistas m ON m.id = r.massagista_id
+    LEFT JOIN massagistas m  ON m.id  = r.massagista_id
+    LEFT JOIN massagistas m2 ON m2.id = r.massagista_id2
     WHERE r.id = ?
   `).get(id) || null;
 }

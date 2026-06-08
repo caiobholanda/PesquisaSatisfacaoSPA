@@ -1350,8 +1350,55 @@ function _cbInit({ textId, listId, clrId, hiddenId }) {
   });
   return { clear, doFilter };
 }
-_cbTrat = _cbInit({ textId:'res-cb-trat-inp', listId:'res-cb-trat-list', clrId:'res-cb-trat-clr', hiddenId:'res-inp-tratamento' });
-_cbMass = _cbInit({ textId:'res-cb-mass-inp', listId:'res-cb-mass-list', clrId:'res-cb-mass-clr', hiddenId:'res-inp-massagista' });
+_cbTrat = _cbInit({ textId:'res-cb-trat-inp',  listId:'res-cb-trat-list',  clrId:'res-cb-trat-clr',  hiddenId:'res-inp-tratamento' });
+_cbMass = _cbInit({ textId:'res-cb-mass-inp',  listId:'res-cb-mass-list',  clrId:'res-cb-mass-clr',  hiddenId:'res-inp-massagista' });
+let _cbTrat2 = _cbInit({ textId:'res-cb-trat2-inp', listId:'res-cb-trat2-list', clrId:'res-cb-trat2-clr', hiddenId:'res-inp-tratamento2' });
+let _cbMass2 = _cbInit({ textId:'res-cb-mass2-inp', listId:'res-cb-mass2-list', clrId:'res-cb-mass2-clr', hiddenId:'res-inp-massagista2' });
+
+let _resTipo2 = null;
+function calSetTipo2(tipo) {
+  _resTipo2 = tipo;
+  document.querySelectorAll('[data-tipo2]').forEach(b => b.classList.toggle('active', b.dataset.tipo2 === tipo));
+  document.getElementById('res2-fg-apto').style.display = tipo === 'hospede' ? '' : 'none';
+  if (tipo !== 'hospede') document.getElementById('res2-inp-apto').value = '';
+}
+document.querySelectorAll('[data-tipo2]').forEach(btn => btn.addEventListener('click', () => calSetTipo2(btn.dataset.tipo2)));
+
+function _isCasal() { return _resSala === 3; }
+
+function _syncTratListToSecond() {
+  const src = document.getElementById('res-cb-trat-list');
+  const dst = document.getElementById('res-cb-trat2-list');
+  if (src && dst) dst.innerHTML = src.innerHTML;
+}
+
+function _renderMassagistasModal2() {
+  const list = document.getElementById('res-cb-mass2-list');
+  const hid  = document.getElementById('res-inp-massagista2');
+  const inp  = document.getElementById('res-cb-mass2-inp');
+  const clr  = document.getElementById('res-cb-mass2-clr');
+  if (!list) return;
+  const data = document.getElementById('res-inp-data')?.value || null;
+  const horaInicio = document.getElementById('res-inp-hora-inicio')?.value || null;
+  const prevId = hid?.value;
+  const mass1Id = document.getElementById('res-inp-massagista')?.value;
+  let lista = _massagistasModal.filter(m => _massagistaTrabalhaNoHorario(m, data, horaInicio, _resHoraFim));
+  // Exclui a massagista já selecionada para pessoa 1
+  if (mass1Id) lista = lista.filter(m => String(m.id) !== String(mass1Id));
+  if (!lista.length) {
+    list.innerHTML = '<div class="res-cb-opt cb-empty">Nenhuma massoterapeuta disponível</div>';
+    return;
+  }
+  list.innerHTML = lista.map(m => {
+    const suffix = m.vinculo ? ` · ${m.vinculo}` : '';
+    return `<div class="res-cb-opt" data-val="${m.id}" data-label="${escHtml(m.nome)}">${escHtml(m.nome)}${suffix}${m.bilingue ? ' 🌍' : ''}</div>`;
+  }).join('');
+  if (prevId && !lista.find(m => String(m.id) === String(prevId))) {
+    if (hid) hid.value = '';
+    if (inp) inp.value = '';
+    if (clr) clr.style.display = 'none';
+  }
+}
 
 async function loadMassagistasModal() {
   if (_massagistasModal.length) return;
@@ -1448,6 +1495,9 @@ async function loadTratamentosModal() {
     }
     if (!html) html = '<div class="res-cb-opt cb-empty">Nenhum tratamento disponível</div>';
     list.innerHTML = html;
+    // Replica a mesma lista para pessoa 2 (casal)
+    const list2 = document.getElementById('res-cb-trat2-list');
+    if (list2) list2.innerHTML = html;
   } catch {}
 }
 
@@ -1568,10 +1618,10 @@ function renderCalDia() {
           const ht=((re-rs)/SLOT_MIN)*CAL_SLOT_PX-4;
           html+=`<div class="cal-slot occupied${halfClass}" style="overflow:visible;position:relative">
             <div class="cal-res-block ${room.cls}" style="position:absolute;left:0;right:4px;top:${topPx}px;height:${ht}px" data-action="cal-ver" data-id="${res.id}" title="${escHtml(res.cliente)}${res.tratamento?' · '+escHtml(res.tratamento):''} · ${res.hora_inicio}–${res.hora_fim}">
-              <div class="cal-res-name">${escHtml(res.cliente)}</div>
-              ${res.tratamento?`<div class="cal-res-trat">${escHtml(res.tratamento)}</div>`:''}
+              <div class="cal-res-name">${escHtml(res.cliente)}${res.cliente2 ? ` & ${escHtml(res.cliente2)}` : ''}</div>
+              ${res.tratamento?`<div class="cal-res-trat">${escHtml(res.tratamento)}${res.tratamento2?' / '+escHtml(res.tratamento2):''}</div>`:''}
               <div class="cal-res-time">${res.hora_inicio} – ${res.hora_fim}</div>
-              ${res.massagista_nome?`<div class="cal-res-by">${escHtml(res.massagista_nome)}</div>`:''}
+              ${res.massagista_nome?`<div class="cal-res-by">${escHtml(res.massagista_nome)}${res.massagista_nome2?' & '+escHtml(res.massagista_nome2):''}</div>`:''}
               <div class="cal-res-by">por ${res.criado_por ? escHtml(res.criado_por) : '—'}</div>
               <button class="cal-res-cancel" data-action="cal-cancelar" data-id="${res.id}" title="Cancelar reserva">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1655,8 +1705,18 @@ function calOpenModal(salaId, data, hora) {
   ['res-inp-nome','res-inp-apto','res-inp-email','res-inp-tel'].forEach(id=>{
     document.getElementById(id).value='';
   });
-  if (_cbTrat) _cbTrat.clear();
-  if (_cbMass) _cbMass.clear();
+  if (_cbTrat)  _cbTrat.clear();
+  if (_cbMass)  _cbMass.clear();
+  if (_cbTrat2) _cbTrat2.clear();
+  if (_cbMass2) _cbMass2.clear();
+  _resTipo2 = null;
+  document.querySelectorAll('[data-tipo2]').forEach(b => b.classList.remove('active'));
+  document.getElementById('res2-fg-apto').style.display = 'none';
+  ['res2-inp-nome','res2-inp-apto','res2-inp-email','res2-inp-tel'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sec2 = document.getElementById('res-sec-pessoa2');
+  if (sec2) sec2.style.display = _isCasal() ? '' : 'none';
   _resHoraInicio = hora || '09:00';
   _resHoraFim = null;
   document.getElementById('res-inp-hora-inicio').value = _resHoraInicio;
@@ -1676,8 +1736,9 @@ window.calOpenModal=calOpenModal;
 function calAtualizarHoraFim() {
   const inicio = document.getElementById('res-inp-hora-inicio').value;
   const trat = document.getElementById('res-inp-tratamento');
-  const tratObj = _tratSelecionado();
-  const dur = tratObj?.duracao_min || 0;
+  const tratObj  = _tratSelecionado();
+  const tratObj2 = _isCasal() ? (_tratamentos.find(t => t.nome === document.getElementById('res-inp-tratamento2')?.value) || null) : null;
+  const dur = Math.max(tratObj?.duracao_min || 0, tratObj2?.duracao_min || 0);
   const tempoEl = document.getElementById('res-tempo-val');
   const stripEl = document.getElementById('res-tempo-info');
   stripEl.style.borderColor = '';
@@ -1837,12 +1898,44 @@ function _massagistaDetHtml(r) {
   return `<span class="resdet-kv-val">${escHtml(m.nome)}${badges.join('')}</span>`;
 }
 
+function _massagistaDetHtml2(r) {
+  if (!r.massagista_id2) return '<span class="resdet-kv-val empty">não informada</span>';
+  const m = _massagistasModal.find(x => x.id === r.massagista_id2);
+  if (!m) {
+    const nome = r.massagista_nome2 || null;
+    return nome
+      ? `<span class="resdet-kv-val">${escHtml(nome)}</span>`
+      : `<span class="resdet-kv-val" style="color:var(--muted)">#${r.massagista_id2}</span>`;
+  }
+  const badges = [];
+  if (m.bilingue) badges.push('<span style="background:rgba(91,103,150,.12);color:var(--indigo);padding:.1rem .45rem;border-radius:999px;font-size:.67rem;font-weight:600;margin-left:.35rem">Bilíngue</span>');
+  if (m.vinculo)  badges.push(`<span style="background:var(--gold-dim);color:var(--gold-dark);padding:.1rem .45rem;border-radius:999px;font-size:.67rem;font-weight:600;margin-left:.3rem">${escHtml(m.vinculo)}</span>`);
+  return `<span class="resdet-kv-val">${escHtml(m.nome)}${badges.join('')}</span>`;
+}
+
 function _precoDetHtml(r) {
   const tm = _tratamentos.find(t => t.id === r.tipo_massagem_id || t.nome === r.tratamento);
   let out = '';
   if (tm?.tipo === 'combo' && tm.componentes_nomes?.length) {
     out += `<div class="resdet-kv"><div class="resdet-kv-label">Inclusos</div><div class="resdet-kv-val">${tm.componentes_nomes.map(n => `<span style="display:inline-block;background:var(--gold-dim);color:var(--gold-dark);padding:.12rem .5rem;border-radius:999px;font-size:.75rem;font-weight:500;margin:.1rem .2rem .1rem 0">${n}</span>`).join('')}</div></div>`;
   }
+  if (tm?.preco) {
+    const sub = Number(tm.preco);
+    const taxa = sub * 0.15;
+    const total = sub + taxa;
+    const fmt = v => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    out += `<div style="border-top:1px dashed var(--border);margin-top:.5rem;padding-top:.6rem">`;
+    out += `<div class="resdet-kv"><div class="resdet-kv-label">Subtotal</div><div class="resdet-kv-val mono">R$ ${fmt(sub)}</div></div>`;
+    out += `<div class="resdet-kv"><div class="resdet-kv-label">Taxa serviço 15%</div><div class="resdet-kv-val mono">R$ ${fmt(taxa)}</div></div>`;
+    out += `<div class="resdet-kv" style="border-bottom:none"><div class="resdet-kv-label" style="font-weight:700;color:var(--text)">Total</div><div class="resdet-kv-val mono gold" style="font-size:1rem">R$ ${fmt(total)}</div></div>`;
+    out += `</div>`;
+  }
+  return out;
+}
+
+function _precoDetHtml2(r) {
+  const tm = _tratamentos.find(t => t.id === r.tipo_massagem_id2 || t.nome === r.tratamento2);
+  let out = '';
   if (tm?.preco) {
     const sub = Number(tm.preco);
     const taxa = sub * 0.15;
@@ -1873,9 +1966,11 @@ document.getElementById('conflito-overlay').addEventListener('click', e => {
 
 document.getElementById('res-inp-hora-inicio').addEventListener('input', calAtualizarHoraFim);
 document.getElementById('res-inp-hora-inicio').addEventListener('change', calAtualizarHoraFim);
-document.getElementById('res-inp-hora-inicio').addEventListener('change', _renderMassagistasModal);
-document.getElementById('res-inp-data')?.addEventListener('change', _renderMassagistasModal);
-document.getElementById('res-flt-bilingue')?.addEventListener('change', _renderMassagistasModal);
+document.getElementById('res-inp-hora-inicio').addEventListener('change', () => { _renderMassagistasModal(); _renderMassagistasModal2(); });
+document.getElementById('res-inp-data')?.addEventListener('change', () => { _renderMassagistasModal(); _renderMassagistasModal2(); });
+document.getElementById('res-flt-bilingue')?.addEventListener('change', () => { _renderMassagistasModal(); _renderMassagistasModal2(); });
+document.getElementById('res-inp-massagista').addEventListener('change', _renderMassagistasModal2);
+document.getElementById('res-inp-tratamento2').addEventListener('change', calAtualizarHoraFim);
 
 // Modal de detalhes da reserva
 function calVerDetalhes(id) {
@@ -1896,6 +1991,7 @@ function calVerDetalhes(id) {
   document.getElementById('resdet-sub').innerHTML =
     `<span class="resdet-sala-badge ${salaCls}"><span class="resdet-sala-dot ${salaCls}"></span>${salaName}</span><span style="margin-left:.5rem;color:var(--muted);font-size:.76rem">${salaTipo}</span>`;
 
+  const isCasal = !!r.cliente2;
   document.getElementById('resdet-body').innerHTML = `
     <div class="resdet-hero">
       <div>
@@ -1912,9 +2008,11 @@ function calVerDetalhes(id) {
       </div>
     </div>
 
+    ${isCasal ? `<div style="display:flex;align-items:center;gap:.6rem;margin:.75rem 0 .5rem"><div style="height:1px;flex:1;background:var(--border)"></div><span style="font-size:.7rem;letter-spacing:.1em;color:var(--gold);font-weight:600;text-transform:uppercase;white-space:nowrap">Pessoa 1</span><div style="height:1px;flex:1;background:var(--border)"></div></div>` : ''}
+
     <div class="resdet-grid">
       <div class="resdet-card">
-        <div class="resdet-card-title">Cliente</div>
+        <div class="resdet-card-title">${isCasal ? 'Pessoa 1' : 'Cliente'}</div>
         <div class="resdet-client-hd">
           <div class="resdet-avatar">${_iniciais(r.cliente)}</div>
           <div>
@@ -1932,7 +2030,7 @@ function calVerDetalhes(id) {
       </div>
 
       <div class="resdet-card">
-        <div class="resdet-card-title">Tratamento</div>
+        <div class="resdet-card-title">Tratamento${isCasal ? ' 1' : ''}</div>
         <div class="resdet-tratamento-name">${r.tratamento ? escHtml(r.tratamento) : '<span style="font-style:italic;color:var(--muted);font-family:var(--font);font-size:.9rem">não informado</span>'}</div>
         ${r.linha ? `<div class="resdet-kv"><div class="resdet-kv-label">Linha</div><div class="resdet-kv-val">${escHtml(r.linha)}</div></div>` : ''}
         <div class="resdet-kv"><div class="resdet-kv-label">Profissional</div>${_massagistaDetHtml(r)}</div>
@@ -1940,6 +2038,34 @@ function calVerDetalhes(id) {
         ${_precoDetHtml(r)}
       </div>
     </div>
+
+    ${isCasal ? `
+    <div style="display:flex;align-items:center;gap:.6rem;margin:.75rem 0 .5rem"><div style="height:1px;flex:1;background:var(--border)"></div><span style="font-size:.7rem;letter-spacing:.1em;color:var(--gold);font-weight:600;text-transform:uppercase;white-space:nowrap">Pessoa 2</span><div style="height:1px;flex:1;background:var(--border)"></div></div>
+    <div class="resdet-grid">
+      <div class="resdet-card">
+        <div class="resdet-card-title">Pessoa 2</div>
+        <div class="resdet-client-hd">
+          <div class="resdet-avatar">${_iniciais(r.cliente2)}</div>
+          <div>
+            <div class="resdet-client-name">${escHtml(r.cliente2 || '—')}</div>
+            <div class="resdet-client-sub">
+              <span class="resdet-pill-tipo ${r.tipo_cliente2 === 'hospede' ? 'hospede' : 'passante'}">${r.tipo_cliente2 === 'hospede' ? 'Hóspede' : 'Passante'}</span>
+              ${r.apto2 ? `<span>· Apto ${escHtml(r.apto2)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        ${r.email2 ? `<div class="resdet-kv"><div class="resdet-kv-label">E-mail</div><div class="resdet-kv-val">${escHtml(r.email2)}</div></div>` : ''}
+        ${r.telefone2 ? `<div class="resdet-kv"><div class="resdet-kv-label">Telefone</div><div class="resdet-kv-val mono">${escHtml(r.telefone2)}</div></div>` : ''}
+        ${!r.email2 && !r.telefone2 ? `<div class="resdet-kv"><div class="resdet-kv-val empty">Sem contato informado</div></div>` : ''}
+      </div>
+      <div class="resdet-card">
+        <div class="resdet-card-title">Tratamento 2</div>
+        <div class="resdet-tratamento-name">${r.tratamento2 ? escHtml(r.tratamento2) : '<span style="font-style:italic;color:var(--muted);font-family:var(--font);font-size:.9rem">não informado</span>'}</div>
+        <div class="resdet-kv"><div class="resdet-kv-label">Profissional</div>${_massagistaDetHtml2(r)}</div>
+        ${_precoDetHtml2(r)}
+      </div>
+    </div>
+    ` : ''}
 
     <div class="resdet-registro">
       <div class="resdet-registro-item">
@@ -2035,6 +2161,8 @@ document.querySelectorAll('.res-room-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     _resSala=+btn.dataset.sala;
     document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    const sec2 = document.getElementById('res-sec-pessoa2');
+    if (sec2) sec2.style.display = _isCasal() ? '' : 'none';
   });
 });
 
@@ -2088,25 +2216,50 @@ document.getElementById('btn-res-salvar').addEventListener('click',async()=>{
   }
 
   // Massoterapeuta obrigatória
-  const selMass = document.getElementById('res-inp-massagista');
-  const massagistaId = selMass?.value ? +selMass.value : null;
+  const massagistaId = document.getElementById('res-inp-massagista')?.value ? +document.getElementById('res-inp-massagista').value : null;
   if (!massagistaId) { err.textContent = 'Selecione a massoterapeuta que vai atender.'; return; }
+
+  // Casal: campos pessoa 2
+  let nome2 = null, tipo2 = null, apto2 = null, email2 = null, tel2 = null, tratamento2 = null, tratObj2 = null, massagistaId2 = null;
+  if (_isCasal()) {
+    nome2       = document.getElementById('res2-inp-nome')?.value.trim() || '';
+    tipo2       = _resTipo2;
+    apto2       = document.getElementById('res2-inp-apto')?.value.trim() || null;
+    email2      = document.getElementById('res2-inp-email')?.value.trim() || null;
+    tel2        = document.getElementById('res2-inp-tel')?.value.trim() || null;
+    tratamento2 = document.getElementById('res-inp-tratamento2')?.value.trim() || '';
+    tratObj2    = _tratamentos.find(t => t.nome === tratamento2) || null;
+    massagistaId2 = document.getElementById('res-inp-massagista2')?.value ? +document.getElementById('res-inp-massagista2').value : null;
+    if (!nome2)       { err.textContent = 'Informe o nome da Pessoa 2.'; return; }
+    if (!tratamento2) { err.textContent = 'Selecione o tratamento da Pessoa 2.'; return; }
+    if (!massagistaId2) { err.textContent = 'Selecione a massoterapeuta da Pessoa 2.'; return; }
+    if (massagistaId2 === massagistaId) { err.textContent = 'As duas pessoas não podem ter a mesma massoterapeuta.'; return; }
+  }
 
   // Verificação local de conflito antes de bater no servidor
   const conflitoLocal = calDetectarConflito(sala, massagistaId, data, horaInicio, _resHoraFim);
-  if (conflitoLocal) {
-    calMostrarConflito(conflitoLocal);
-    return;
+  if (conflitoLocal) { calMostrarConflito(conflitoLocal); return; }
+  if (massagistaId2) {
+    const c2 = calDetectarConflito(sala, massagistaId2, data, horaInicio, _resHoraFim, null);
+    // Ignora conflito de sala (já verificado) — só profissional
+    if (c2 && c2.tipo === 'massagista') { calMostrarConflito(c2); return; }
   }
 
   const btn=document.getElementById('btn-res-salvar');
   btn.disabled=true;
   try{
-    const res=await api('/api/reservas',{method:'POST',body:JSON.stringify({
+    const body = {
       sala, tipo_cliente: tipo, cliente: nome, apto, email, telefone, tratamento, data,
       hora_inicio: horaInicio, hora_fim: _resHoraFim,
-      linha, tipo_massagem_id: tipoMassagemId, massagista_id: massagistaId
-    })});
+      linha, tipo_massagem_id: tipoMassagemId, massagista_id: massagistaId,
+    };
+    if (_isCasal()) {
+      Object.assign(body, {
+        cliente2: nome2, tipo_cliente2: tipo2 || null, apto2, email2, telefone2: tel2,
+        tratamento2, tipo_massagem_id2: tratObj2?.id || null, massagista_id2: massagistaId2,
+      });
+    }
+    const res=await api('/api/reservas',{method:'POST',body:JSON.stringify(body)});
     if(!res)return;
     const d=await res.json();
     if(!d.ok){
