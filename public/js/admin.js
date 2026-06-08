@@ -1510,10 +1510,8 @@ function _tratSelecionado() {
   return _tratamentos.find(t => t.nome === sel.value) || null;
 }
 
-// Slots de 30min: bloco = ceil(duracao/30) * 30
 function _blocoMinutos(durTratamento) {
-  if (!durTratamento) return 0;
-  return Math.ceil(durTratamento / 30) * 30;
+  return durTratamento || 0;
 }
 
 const TAXA_SERVICO = 0.15;
