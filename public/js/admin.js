@@ -139,14 +139,17 @@ function _scoreColor(media) {
 }
 
 function renderMediaBadge(media) {
-  if (media == null) return '<span class="q-media-badge empty">— / 9</span>';
+  if (media == null) return `<span class="q-media-badge empty">— / ${NOTA_MAX}</span>`;
   const cor = _scoreColor(media);
   return `<span class="q-media-badge" style="background:${cor}1A;color:${cor};border-color:${cor}40"><strong>${media.toFixed(1)}</strong><span class="q-media-max"> / ${NOTA_MAX}</span></span>`;
 }
 
 function renderTextoGroup(titulo, items) {
   if (!items || !items.length) return '';
-  return `<div class="textos-sub">${titulo}</div><div class="texto-list">${items.map(t =>
+  const vistos = new Set();
+  const unicos = items.filter(t => { const k = t.texto?.trim(); if (!k || vistos.has(k)) return false; vistos.add(k); return true; });
+  if (!unicos.length) return '';
+  return `<div class="textos-sub">${titulo}</div><div class="texto-list">${unicos.map(t =>
     `<div class="texto-item"><div class="ti-text">"${escHtml(t.texto)}"</div><div class="ti-meta">${escHtml(t.nome)} · ${fmtDate(t.data)}</div></div>`
   ).join('')}</div>`;
 }
@@ -176,12 +179,15 @@ async function loadStats() {
   const params = new URLSearchParams();
   if (_filters.from) params.set('from', _filters.from);
   if (_filters.to) params.set('to', _filters.to);
-  const res = await api(`/api/feedback/stats?${params}`);
-  if (!res) return;
-  const d = await res.json();
+  let res, d;
+  try {
+    res = await api(`/api/feedback/stats?${params}`);
+    if (!res) return;
+    d = await res.json();
+  } catch { return; }
   if (!d.ok) return;
   document.getElementById('kpi-total').textContent = d.total;
-  document.getElementById('kpi-media').textContent = d.mediaGeral != null ? d.mediaGeral.toFixed(2) + ' / 9' : '—';
+  document.getElementById('kpi-media').textContent = d.mediaGeral != null ? d.mediaGeral.toFixed(2) + ' / ' + NOTA_MAX : '—';
   document.getElementById('kpi-recomenda').textContent = d.pctRecomenda != null ? d.pctRecomenda + '%' : '—';
   const h = d.porOrigem.find(r => r.origem === 'hospede')?.t || 0;
   const c = d.porOrigem.find(r => r.origem === 'colaborador')?.t || 0;
@@ -230,8 +236,8 @@ document.addEventListener('visibilitychange', () => {
 
 // ── Table ──
 let _tableAbort = null;
-const NOTA_MAP = { otimo: 9, bom: 3, regular: 1, ruim: 0 };
-const NOTA_MAX = 9;
+const NOTA_MAP = { otimo: 9, bom: 6, regular: 3, ruim: 0 };
+const NOTA_MAX = Math.max(...Object.values(NOTA_MAP));
 function avgRow(r) {
   const campos = ['servicos_expectativa','servicos_explicacao','servicos_atitude','servicos_tecnica','instalacoes_conforto','instalacoes_organizacao','instalacoes_conveniencia'];
   const vals = campos.map(c => NOTA_MAP[r[c]]).filter(v => v !== undefined && v !== null);
@@ -254,7 +260,7 @@ function avgCampo(items, campo) {
   if (!vals.length) return null;
   return +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
 }
-function scoreClass(v) { if (v == null) return ''; return v >= 3.5 ? 'score-green' : v >= 2.5 ? 'score-yellow' : 'score-red'; }
+function scoreClass(v) { if (v == null) return ''; return v >= 7 ? 'score-green' : v >= 4 ? 'score-yellow' : 'score-red'; }
 function fmtDate(s) { if (!s) return '—'; return s.slice(0,10).split('-').reverse().join('/'); }
 function fmtDataHoraBR(s) {
   if (!s) return null;
@@ -282,10 +288,19 @@ async function loadTable() {
   if (_filters.to) params.set('to', _filters.to);
   if (_filters.origem) params.set('origem', _filters.origem);
   if (_filters.tipo) params.set('tipo_cliente', _filters.tipo);
-  const res = await api(`/api/feedback?${params}`, { signal });
-  if (signal.aborted) return;
-  if (!res) return;
-  const d = await res.json();
+  let res, d;
+  try {
+    res = await api(`/api/feedback?${params}`, { signal });
+    if (signal.aborted) return;
+    if (!res) return;
+    d = await res.json();
+  } catch (e) {
+    if (e?.name === 'AbortError') return;
+    document.getElementById('tbl-body').innerHTML = '';
+    document.getElementById('tbl-empty').style.display = '';
+    document.getElementById('tbl-empty').textContent = 'Erro ao carregar dados.';
+    return;
+  }
   if (!d.ok) return;
   _total = d.total;
 
@@ -701,10 +716,16 @@ document.querySelectorAll('#tabs-massagistas .mgmt-tab').forEach(btn => {
 document.getElementById('search-massagistas').addEventListener('input', renderMassagistas);
 
 async function loadMassagistas() {
-  const res = await api('/api/massagistas');
-  if (!res) return;
-  const d = await res.json();
-  _massagistas = d.items;
+  let res, d;
+  try {
+    res = await api('/api/massagistas');
+    if (!res) return;
+    d = await res.json();
+  } catch {
+    document.getElementById('list-massagistas').innerHTML = '<div class="mgmt-empty">Erro ao carregar profissionais.</div>';
+    return;
+  }
+  _massagistas = d.items || [];
   renderMassagistas();
   if (document.getElementById('view-escala')?.style.display !== 'none') renderEscala(_massagistas);
 }
@@ -883,9 +904,15 @@ document.getElementById('mgmt-m-salvar').addEventListener('click', async () => {
 
 // ── Escala de Trabalho ──
 async function loadEscala() {
-  const res = await api('/api/massagistas');
-  if (!res) return;
-  const d = await res.json();
+  let res, d;
+  try {
+    res = await api('/api/massagistas');
+    if (!res) return;
+    d = await res.json();
+  } catch {
+    document.getElementById('escala-table-wrap').innerHTML = '<div class="mgmt-empty">Erro ao carregar escala.</div>';
+    return;
+  }
   _massagistas = d.items || [];
   renderEscala(_massagistas);
 }
@@ -944,10 +971,16 @@ document.querySelectorAll('#tabs-tipos .mgmt-tab').forEach(btn => {
 document.getElementById('search-tipos').addEventListener('input', renderTipos);
 
 async function loadTipos() {
-  const res = await api('/api/tipos-massagem');
-  if (!res) return;
-  const d = await res.json();
-  _tipos = d.items;
+  let res, d;
+  try {
+    res = await api('/api/tipos-massagem');
+    if (!res) return;
+    d = await res.json();
+  } catch {
+    document.getElementById('list-tipos').innerHTML = '<div class="mgmt-empty">Erro ao carregar tratamentos.</div>';
+    return;
+  }
+  _tipos = d.items || [];
   renderTipos();
 }
 
@@ -1122,7 +1155,7 @@ window.showHistoricoMassagista = async (id, nome) => {
     </div>
     <div class="hist-kpi">
       <div class="hist-kpi-label">Média da profissional</div>
-      <div class="hist-kpi-val" style="color:var(--gold)">${mediaGeral != null ? mediaGeral + ' / 9' : '—'}</div>
+      <div class="hist-kpi-val" style="color:var(--gold)">${mediaGeral != null ? mediaGeral + ' / ' + NOTA_MAX : '—'}</div>
     </div>
     <div class="hist-kpi">
       <div class="hist-kpi-label">Recomendariam</div>
@@ -1274,9 +1307,16 @@ let _massagistasModal = []; // cache p/ modal de reserva — [{id, nome, bilingu
 
 async function loadMassagistasModal() {
   if (_massagistasModal.length) return;
-  const r = await api('/api/massagistas-ativas');
-  if (!r) return;
-  const d = await r.json();
+  let r, d;
+  try {
+    r = await api('/api/massagistas-ativas');
+    if (!r) return;
+    d = await r.json();
+  } catch {
+    const sel = document.getElementById('res-inp-massagista');
+    if (sel) sel.innerHTML = '<option value="">Erro ao carregar profissionais</option>';
+    return;
+  }
   _massagistasModal = d.items || [];
   _renderMassagistasModal();
 }
@@ -2124,9 +2164,15 @@ async function loadUsuarios() {
 
   const tbody = document.getElementById('usuarios-body');
   tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Carregando…</td></tr>';
-  const r = await api('/api/auth/usuarios');
-  if (!r) return;
-  const d = await r.json();
+  let r, d;
+  try {
+    r = await api('/api/auth/usuarios');
+    if (!r) return;
+    d = await r.json();
+  } catch {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--danger)">Erro ao carregar usuários.</td></tr>';
+    return;
+  }
 
   // Atualiza card com dados completos do usuário logado
   if (me && d.ok) {

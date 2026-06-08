@@ -227,7 +227,7 @@ export function listarFeedback({ origem, tipo_cliente, from, to, limit = 50, off
   return { total, items };
 }
 
-const NOTA_MAP = { otimo: 9, bom: 3, regular: 1, ruim: 0 };
+const NOTA_MAP = { otimo: 9, bom: 6, regular: 3, ruim: 0 };
 const NOTA_MAX = 9;
 function notaNum(v) { return NOTA_MAP[v] ?? null; }
 function avgNotas(items, campo) {
