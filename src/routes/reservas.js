@@ -38,13 +38,23 @@ function _hhmmToMin(s) {
 }
 
 router.post('/', (req, res) => {
-  const { sala, tipo_cliente, cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id } = req.body || {};
+  const {
+    sala, tipo_cliente, cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id,
+    cliente2, tipo_cliente2, apto2, email2, telefone2, tratamento2, tipo_massagem_id2, massagista_id2,
+  } = req.body || {};
   if (!sala || !tipo_cliente || !cliente?.trim() || !email?.trim() || !data || !hora_inicio || !hora_fim)
     return res.status(400).json({ ok: false, error: 'Campos obrigatórios ausentes' });
   if (!massagista_id)
     return res.status(400).json({ ok: false, error: 'Selecione uma massoterapeuta para o atendimento' });
   if (!['hospede', 'passante'].includes(tipo_cliente))
     return res.status(400).json({ ok: false, error: 'Tipo de cliente inválido' });
+  // Casal: validar pessoa 2
+  if (+sala === 3) {
+    if (!cliente2?.trim()) return res.status(400).json({ ok: false, error: 'Informe o nome da Pessoa 2 (Casal)' });
+    if (!massagista_id2)   return res.status(400).json({ ok: false, error: 'Selecione a massoterapeuta da Pessoa 2' });
+    if (massagista_id2 === massagista_id || +massagista_id2 === +massagista_id)
+      return res.status(400).json({ ok: false, error: 'As duas pessoas não podem ter a mesma massoterapeuta' });
+  }
 
   const iniMin = _hhmmToMin(hora_inicio);
   const fimMin = _hhmmToMin(hora_fim);
@@ -56,6 +66,7 @@ router.post('/', (req, res) => {
     return res.status(400).json({ ok: false, error: 'O tratamento terminaria após o fechamento do spa às 22:00' });
 
   try {
+    const criado_por = (() => { const a = req.user?.sub ? buscarAdminById(req.user.sub) : null; return a?.nome || a?.username || req.user?.username || null; })();
     const id = inserirReserva(
       +sala, cliente.trim(), tipo_cliente, apto?.trim() || null, email.trim(),
       telefone?.trim() || null, tratamento?.trim() || null, data, hora_inicio, hora_fim,
@@ -63,7 +74,15 @@ router.post('/', (req, res) => {
         linha: linha?.trim() || null,
         tipo_massagem_id: tipo_massagem_id ? +tipo_massagem_id : null,
         massagista_id: +massagista_id,
-        criado_por: (() => { const a = req.user?.sub ? buscarAdminById(req.user.sub) : null; return a?.nome || a?.username || req.user?.username || null; })(),
+        criado_por,
+        cliente2: cliente2?.trim() || null,
+        tipo_cliente2: tipo_cliente2 || null,
+        apto2: apto2?.trim() || null,
+        email2: email2?.trim() || null,
+        telefone2: telefone2?.trim() || null,
+        tratamento2: tratamento2?.trim() || null,
+        tipo_massagem_id2: tipo_massagem_id2 ? +tipo_massagem_id2 : null,
+        massagista_id2: massagista_id2 ? +massagista_id2 : null,
       }
     );
     res.status(201).json({ ok: true, id });
