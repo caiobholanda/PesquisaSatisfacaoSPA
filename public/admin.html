@@ -1929,14 +1929,28 @@
     .res-cb-opt.cb-empty { color: var(--muted); font-style: italic; cursor: default; }
 
     .res-pessoa2-sep {
-      display: flex; align-items: center; gap: .75rem; margin: .25rem 0;
+      display: flex; align-items: center; gap: .75rem; margin: .25rem 0 .6rem;
     }
     .res-pessoa2-sep::before, .res-pessoa2-sep::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
+      content: ''; flex: 1; height: 1px; background: rgba(45,122,79,.3);
     }
     .res-pessoa2-sep span {
-      font-size: .72rem; font-weight: 600; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--gold-dark); white-space: nowrap;
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #2D7A4F; white-space: nowrap;
+    }
+
+    #res-sec-pessoa2 {
+      display: flex; flex-direction: column; gap: .6rem;
+    }
+
+    .res-pessoa2-container {
+      background: rgba(45,122,79,.04);
+      border: 1px solid rgba(45,122,79,.18);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
     }
 
     .res-tempo-info {
@@ -3042,47 +3056,56 @@
       <!-- ── Seção Pessoa 2 (Casal) ── -->
       <div id="res-sec-pessoa2" style="display:none">
         <div class="res-pessoa2-sep"><span>✦ Pessoa 2</span></div>
-        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
-          <button type="button" class="res-tipo-btn" id="res2-tipo-hospede" data-tipo2="hospede">Hóspede</button>
-          <button type="button" class="res-tipo-btn" id="res2-tipo-passante" data-tipo2="passante">Passante</button>
-        </div>
-        <div class="res-fg">
-          <label>Nome <span style="color:var(--danger)">*</span></label>
-          <input type="text" id="res2-inp-nome" placeholder="Nome completo">
-        </div>
-        <div class="res-fg" id="res2-fg-apto" style="display:none">
-          <label>Apartamento</label>
-          <input type="text" id="res2-inp-apto" placeholder="Ex: 301">
-        </div>
-        <div class="res-fg">
-          <label>E-mail</label>
-          <input type="email" id="res2-inp-email" placeholder="email@exemplo.com">
-        </div>
-        <div class="res-fg">
-          <label>Telefone</label>
-          <input type="text" id="res2-inp-tel" placeholder="(85) 99999-9999">
-        </div>
-        <div class="res-fg">
-          <label>Tratamento <span style="color:var(--danger)">*</span></label>
-          <div class="res-cb" id="res-cb-trat2">
-            <div class="res-cb-wrap">
-              <input type="text" class="res-cb-inp" id="res-cb-trat2-inp" placeholder="— Pesquisar tratamento —" autocomplete="off" spellcheck="false">
-              <button type="button" class="res-cb-clr" id="res-cb-trat2-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+        <div class="res-pessoa2-container">
+          <div class="res-fg">
+            <label>Tipo de cliente</label>
+            <div class="res-tipo-grid">
+              <button type="button" class="res-tipo-btn" id="res2-tipo-hospede" data-tipo2="hospede">Hóspede</button>
+              <button type="button" class="res-tipo-btn" id="res2-tipo-passante" data-tipo2="passante">Passante</button>
             </div>
-            <div class="res-cb-list" id="res-cb-trat2-list" style="display:none"></div>
           </div>
-          <input type="hidden" id="res-inp-tratamento2">
-        </div>
-        <div class="res-fg">
-          <label>Massoterapeuta <span style="color:var(--danger)">*</span></label>
-          <div class="res-cb" id="res-cb-mass2">
-            <div class="res-cb-wrap">
-              <input type="text" class="res-cb-inp" id="res-cb-mass2-inp" placeholder="— Pesquisar profissional —" autocomplete="off" spellcheck="false">
-              <button type="button" class="res-cb-clr" id="res-cb-mass2-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+          <div class="res-frow">
+            <div class="res-fg">
+              <label>Nome <span style="color:var(--danger)">*</span></label>
+              <input type="text" id="res2-inp-nome" placeholder="Nome completo">
             </div>
-            <div class="res-cb-list" id="res-cb-mass2-list" style="display:none"></div>
+            <div class="res-fg" id="res2-fg-apto" style="display:none">
+              <label>Nº do Apto</label>
+              <input type="text" id="res2-inp-apto" placeholder="Ex: 301">
+            </div>
           </div>
-          <input type="hidden" id="res-inp-massagista2">
+          <div class="res-frow">
+            <div class="res-fg">
+              <label>E-mail</label>
+              <input type="email" id="res2-inp-email" placeholder="email@exemplo.com">
+            </div>
+            <div class="res-fg">
+              <label>Telefone</label>
+              <input type="text" id="res2-inp-tel" placeholder="(85) 99999-9999">
+            </div>
+          </div>
+          <div class="res-fg">
+            <label>Tratamento <span style="color:var(--danger)">*</span></label>
+            <div class="res-cb" id="res-cb-trat2">
+              <div class="res-cb-wrap">
+                <input type="text" class="res-cb-inp" id="res-cb-trat2-inp" placeholder="— Pesquisar tratamento —" autocomplete="off" spellcheck="false">
+                <button type="button" class="res-cb-clr" id="res-cb-trat2-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+              </div>
+              <div class="res-cb-list" id="res-cb-trat2-list" style="display:none"></div>
+            </div>
+            <input type="hidden" id="res-inp-tratamento2">
+          </div>
+          <div class="res-fg">
+            <label>Massoterapeuta <span style="color:var(--danger)">*</span></label>
+            <div class="res-cb" id="res-cb-mass2">
+              <div class="res-cb-wrap">
+                <input type="text" class="res-cb-inp" id="res-cb-mass2-inp" placeholder="— Pesquisar profissional —" autocomplete="off" spellcheck="false">
+                <button type="button" class="res-cb-clr" id="res-cb-mass2-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+              </div>
+              <div class="res-cb-list" id="res-cb-mass2-list" style="display:none"></div>
+            </div>
+            <input type="hidden" id="res-inp-massagista2">
+          </div>
         </div>
       </div>
 
