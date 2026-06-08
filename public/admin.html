@@ -1743,7 +1743,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       width: 100%;
-      max-width: 540px;
+      max-width: 630px;
       box-shadow: 0 24px 64px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.07);
       animation: fadeUp .18s ease;
     }
@@ -1789,7 +1789,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.875rem;
     }
 
     .res-room-grid {
@@ -1928,8 +1928,15 @@
     .res-cb-opt:hover { background: var(--surface2); }
     .res-cb-opt.cb-empty { color: var(--muted); font-style: italic; cursor: default; }
 
-    .res-pessoa2-sep {
+    .res-pessoa1-sep, .res-pessoa2-sep {
       display: flex; align-items: center; gap: .75rem; margin: .25rem 0 .6rem;
+    }
+    .res-pessoa1-sep::before, .res-pessoa1-sep::after {
+      content: ''; flex: 1; height: 1px; background: rgba(212,149,61,.35);
+    }
+    .res-pessoa1-sep span {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--gold-dark); white-space: nowrap;
     }
     .res-pessoa2-sep::before, .res-pessoa2-sep::after {
       content: ''; flex: 1; height: 1px; background: rgba(45,122,79,.3);
@@ -1937,6 +1944,16 @@
     .res-pessoa2-sep span {
       font-size: .7rem; font-weight: 700; letter-spacing: .1em;
       text-transform: uppercase; color: #2D7A4F; white-space: nowrap;
+    }
+
+    .res-pessoa1-wrap {
+      display: flex; flex-direction: column; gap: .75rem;
+    }
+    .res-pessoa1-wrap.casal-ativo {
+      background: rgba(212,149,61,.04);
+      border: 1px solid rgba(212,149,61,.22);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
     }
 
     #res-sec-pessoa2 {
@@ -2987,71 +3004,77 @@
           </button>
         </div>
       </div>
-      <div class="res-fg">
-        <label>Tipo de cliente <span style="color:var(--danger)">*</span></label>
-        <div class="res-tipo-grid">
-          <button class="res-tipo-btn" id="res-tipo-hospede" data-tipo="hospede">Hóspede</button>
-          <button class="res-tipo-btn" id="res-tipo-passante" data-tipo="passante">Passante</button>
-        </div>
-      </div>
-      <div class="res-frow">
+      <!-- ── Separador Pessoa 1 (só Casal) ── -->
+      <div id="res-sep-pessoa1" class="res-pessoa1-sep" style="display:none"><span>✦ Pessoa 1</span></div>
+
+      <!-- ── Campos Pessoa 1 ── -->
+      <div id="res-pessoa1-wrap" class="res-pessoa1-wrap">
         <div class="res-fg">
-          <label>Nome <span style="color:var(--danger)">*</span></label>
-          <input type="text" id="res-inp-nome" placeholder="Nome completo">
-        </div>
-        <div class="res-fg" id="res-fg-apto" style="display:none">
-          <label>Nº do Apto</label>
-          <input type="text" id="res-inp-apto" placeholder="Ex: 301">
-        </div>
-      </div>
-      <div class="res-frow">
-        <div class="res-fg">
-          <label>E-mail <span style="color:var(--danger)">*</span></label>
-          <input type="email" id="res-inp-email" placeholder="email@exemplo.com">
-        </div>
-        <div class="res-fg">
-          <label>Telefone</label>
-          <input type="text" id="res-inp-tel" placeholder="(85) 99999-9999">
-        </div>
-      </div>
-      <div class="res-fg">
-        <label>Tratamento</label>
-        <div class="res-cb" id="res-cb-trat">
-          <div class="res-cb-wrap">
-            <input type="text" class="res-cb-inp" id="res-cb-trat-inp" placeholder="— Pesquisar tratamento —" autocomplete="off" spellcheck="false">
-            <button type="button" class="res-cb-clr" id="res-cb-trat-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+          <label>Tipo de cliente <span style="color:var(--danger)">*</span></label>
+          <div class="res-tipo-grid">
+            <button class="res-tipo-btn" id="res-tipo-hospede" data-tipo="hospede">Hóspede</button>
+            <button class="res-tipo-btn" id="res-tipo-passante" data-tipo="passante">Passante</button>
           </div>
-          <div class="res-cb-list" id="res-cb-trat-list" style="display:none"></div>
         </div>
-        <input type="hidden" id="res-inp-tratamento">
-      </div>
-      <div class="res-fg-row">
+        <div class="res-frow">
+          <div class="res-fg" id="res-fg-nome">
+            <label>Nome <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="res-inp-nome" placeholder="Nome completo">
+          </div>
+          <div class="res-fg" id="res-fg-apto" style="display:none">
+            <label>Nº do Apto</label>
+            <input type="text" id="res-inp-apto" placeholder="Ex: 301">
+          </div>
+        </div>
+        <div class="res-frow">
+          <div class="res-fg">
+            <label>E-mail <span style="color:var(--danger)">*</span></label>
+            <input type="email" id="res-inp-email" placeholder="email@exemplo.com">
+          </div>
+          <div class="res-fg">
+            <label>Telefone</label>
+            <input type="text" id="res-inp-tel" placeholder="(85) 99999-9999">
+          </div>
+        </div>
         <div class="res-fg">
-          <label>Data <span style="color:var(--danger)">*</span></label>
-          <input type="date" id="res-inp-data">
+          <label>Tratamento</label>
+          <div class="res-cb" id="res-cb-trat">
+            <div class="res-cb-wrap">
+              <input type="text" class="res-cb-inp" id="res-cb-trat-inp" placeholder="— Pesquisar tratamento —" autocomplete="off" spellcheck="false">
+              <button type="button" class="res-cb-clr" id="res-cb-trat-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+            </div>
+            <div class="res-cb-list" id="res-cb-trat-list" style="display:none"></div>
+          </div>
+          <input type="hidden" id="res-inp-tratamento">
+        </div>
+        <div class="res-fg-row">
+          <div class="res-fg">
+            <label>Data <span style="color:var(--danger)">*</span></label>
+            <input type="date" id="res-inp-data">
+          </div>
+          <div class="res-fg">
+            <label>Hora de início <span style="color:var(--danger)">*</span></label>
+            <input type="time" id="res-inp-hora-inicio" min="08:00" max="21:45" step="900">
+          </div>
         </div>
         <div class="res-fg">
-          <label>Hora de início <span style="color:var(--danger)">*</span></label>
-          <input type="time" id="res-inp-hora-inicio" min="08:00" max="21:45" step="900">
-        </div>
-      </div>
-      <div class="res-fg">
-        <label>
-          Massoterapeuta <span style="color:var(--danger)">*</span>
-          <label class="res-flt-bilingue-label" style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.7rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.78rem;cursor:pointer">
-            <input type="checkbox" id="res-flt-bilingue" style="margin:0">
-            🌍 só bilíngues
+          <label>
+            Massoterapeuta <span style="color:var(--danger)">*</span>
+            <label class="res-flt-bilingue-label" style="display:inline-flex;align-items:center;gap:.3rem;margin-left:.7rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.78rem;cursor:pointer">
+              <input type="checkbox" id="res-flt-bilingue" style="margin:0">
+              🌍 só bilíngues
+            </label>
           </label>
-        </label>
-        <div class="res-cb" id="res-cb-mass">
-          <div class="res-cb-wrap">
-            <input type="text" class="res-cb-inp" id="res-cb-mass-inp" placeholder="— Pesquisar profissional —" autocomplete="off" spellcheck="false">
-            <button type="button" class="res-cb-clr" id="res-cb-mass-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+          <div class="res-cb" id="res-cb-mass">
+            <div class="res-cb-wrap">
+              <input type="text" class="res-cb-inp" id="res-cb-mass-inp" placeholder="— Pesquisar profissional —" autocomplete="off" spellcheck="false">
+              <button type="button" class="res-cb-clr" id="res-cb-mass-clr" tabindex="-1" style="display:none" aria-label="Limpar">✕</button>
+            </div>
+            <div class="res-cb-list" id="res-cb-mass-list" style="display:none"></div>
           </div>
-          <div class="res-cb-list" id="res-cb-mass-list" style="display:none"></div>
+          <input type="hidden" id="res-inp-massagista">
         </div>
-        <input type="hidden" id="res-inp-massagista">
-      </div>
+      </div><!-- /#res-pessoa1-wrap -->
 
       <!-- ── Seção Pessoa 2 (Casal) ── -->
       <div id="res-sec-pessoa2" style="display:none">

@@ -1359,8 +1359,12 @@ let _resTipo2 = null;
 function calSetTipo2(tipo) {
   _resTipo2 = tipo;
   document.querySelectorAll('[data-tipo2]').forEach(b => b.classList.toggle('active', b.dataset.tipo2 === tipo));
-  document.getElementById('res2-fg-apto').style.display = tipo === 'hospede' ? '' : 'none';
-  if (tipo !== 'hospede') document.getElementById('res2-inp-apto').value = '';
+  const isHospede = tipo === 'hospede';
+  const apto2El = document.getElementById('res2-fg-apto');
+  apto2El.style.display = isHospede ? '' : 'none';
+  const nome2Fg = apto2El.previousElementSibling;
+  if (nome2Fg) nome2Fg.style.gridColumn = isHospede ? '' : '1 / -1';
+  if (!isHospede) document.getElementById('res2-inp-apto').value = '';
 }
 document.querySelectorAll('[data-tipo2]').forEach(btn => btn.addEventListener('click', () => calSetTipo2(btn.dataset.tipo2)));
 
@@ -1690,8 +1694,12 @@ _startNowLineInterval();
 function calSetTipo(tipo) {
   _resTipo = tipo;
   document.querySelectorAll('.res-tipo-btn').forEach(b => b.classList.toggle('active', b.dataset.tipo === tipo));
-  document.getElementById('res-fg-apto').style.display = tipo === 'hospede' ? '' : 'none';
-  if (tipo !== 'hospede') document.getElementById('res-inp-apto').value = '';
+  const isHospede = tipo === 'hospede';
+  const aptoEl = document.getElementById('res-fg-apto');
+  aptoEl.style.display = isHospede ? '' : 'none';
+  const nomeFg = document.getElementById('res-fg-nome');
+  if (nomeFg) nomeFg.style.gridColumn = isHospede ? '' : '1 / -1';
+  if (!isHospede) document.getElementById('res-inp-apto').value = '';
 }
 
 function calOpenModal(salaId, data, hora) {
@@ -1702,6 +1710,8 @@ function calOpenModal(salaId, data, hora) {
   document.getElementById('res-modal-err').textContent='';
   document.querySelectorAll('.res-tipo-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('res-fg-apto').style.display='none';
+  const _nomeFg = document.getElementById('res-fg-nome');
+  if (_nomeFg) _nomeFg.style.gridColumn = '1 / -1';
   ['res-inp-nome','res-inp-apto','res-inp-email','res-inp-tel'].forEach(id=>{
     document.getElementById(id).value='';
   });
@@ -1712,11 +1722,17 @@ function calOpenModal(salaId, data, hora) {
   _resTipo2 = null;
   document.querySelectorAll('[data-tipo2]').forEach(b => b.classList.remove('active'));
   document.getElementById('res2-fg-apto').style.display = 'none';
+  const _nome2Fg = document.getElementById('res2-fg-apto')?.previousElementSibling;
+  if (_nome2Fg) _nome2Fg.style.gridColumn = '1 / -1';
   ['res2-inp-nome','res2-inp-apto','res2-inp-email','res2-inp-tel'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const sec2 = document.getElementById('res-sec-pessoa2');
   if (sec2) sec2.style.display = _isCasal() ? '' : 'none';
+  const _sep1 = document.getElementById('res-sep-pessoa1');
+  if (_sep1) _sep1.style.display = _isCasal() ? '' : 'none';
+  const _wrap1 = document.getElementById('res-pessoa1-wrap');
+  if (_wrap1) _wrap1.classList.toggle('casal-ativo', _isCasal());
   _resHoraInicio = hora || '09:00';
   _resHoraFim = null;
   document.getElementById('res-inp-hora-inicio').value = _resHoraInicio;
@@ -2163,6 +2179,10 @@ document.querySelectorAll('.res-room-btn').forEach(btn=>{
     document.querySelectorAll('.res-room-btn').forEach(b=>b.classList.toggle('active',b===btn));
     const sec2 = document.getElementById('res-sec-pessoa2');
     if (sec2) sec2.style.display = _isCasal() ? '' : 'none';
+    const sep1 = document.getElementById('res-sep-pessoa1');
+    if (sep1) sep1.style.display = _isCasal() ? '' : 'none';
+    const wrap1 = document.getElementById('res-pessoa1-wrap');
+    if (wrap1) wrap1.classList.toggle('casal-ativo', _isCasal());
   });
 });
 
