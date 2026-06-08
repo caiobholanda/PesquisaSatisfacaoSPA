@@ -53,8 +53,11 @@ export default function App() {
       setScreen(next);
       window.scrollTo(0, 0);
       setVisible(true);
-      if (next === 'form') setFormStart(Date.now());
-      if (opts.afterSubmit) {
+      if (next === 'form') {
+        const lib = tokenData?.liberada_em;
+        setFormStart(lib ? new Date(lib.replace(' ', 'T') + 'Z').getTime() : Date.now());
+      }
+      if (opts.afterSubmit || opts.clearToken) {
         setTokenData(null);
         startPolling();
       }
@@ -66,7 +69,7 @@ export default function App() {
   return (
     <div className="app-root">
       {screen === 'welcome' && <WelcomeScreen      visible={visible} onStart={() => go('form')}    tokenData={tokenData} />}
-      {screen === 'form'    && <FormScreen         visible={visible} onSubmit={() => go('confirm')} onBack={() => go('welcome')} prefill={tokenData} formStart={formStart} onTimeout={() => go('welcome')} />}
+      {screen === 'form'    && <FormScreen         visible={visible} onSubmit={() => go('confirm')} onBack={() => go('welcome')} prefill={tokenData} formStart={formStart} onTimeout={() => go('welcome', { clearToken: true })} />}
       {screen === 'confirm' && <ConfirmationScreen visible={visible} onRestart={() => go('welcome', { afterSubmit: true })} />}
     </div>
   );

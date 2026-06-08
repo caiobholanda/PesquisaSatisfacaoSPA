@@ -92,6 +92,7 @@ app.get('/api/survey/live', (_req, res) => {
       nome: row.cliente, apto: row.apto, email: row.email, telefone: row.telefone,
       data: row.data, tratamento: row.tratamento, tipo_cliente: row.tipo_cliente,
       massoterapeuta: row.massagista_nome || '',
+      liberada_em: row.liberada_em,
     },
   });
 });
@@ -110,6 +111,7 @@ app.get('/api/survey/:token', (req, res) => {
       tratamento: row.tratamento,
       tipo_cliente: row.tipo_cliente,
       massoterapeuta: row.massagista_nome || '',
+      liberada_em: row.liberada_em,
     },
   });
 });
