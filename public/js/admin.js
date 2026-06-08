@@ -800,9 +800,9 @@ function _renderDispGrid(disp) {
       <input type="checkbox" class="disp-chk" data-day="${key}" ${on ? 'checked' : ''}>
       <span class="disp-row-label">${label}</span>
       <div class="disp-row-times">
-        <input type="time" class="disp-ini" data-day="${key}" value="${ini || '08:00'}" ${on ? '' : 'disabled'}>
+        <input type="time" class="disp-ini" data-day="${key}" value="${ini || '08:00'}" min="08:00" max="22:00" ${on ? '' : 'disabled'}>
         <span class="disp-row-sep">–</span>
-        <input type="time" class="disp-fim" data-day="${key}" value="${fim || '17:00'}" ${on ? '' : 'disabled'}>
+        <input type="time" class="disp-fim" data-day="${key}" value="${fim || '17:00'}" min="08:00" max="22:00" ${on ? '' : 'disabled'}>
       </div>
       ${!on ? '<span class="disp-row-off">Não trabalha</span>' : ''}
     </div>`;
@@ -823,15 +823,18 @@ function _coletarDisp() {
   const grid = document.getElementById('mgmt-m-disp-grid');
   if (!grid) return null;
   const disp = {};
-  grid.querySelectorAll('.disp-row').forEach(row => {
+  const DAY_LABELS = { seg:'Segunda',ter:'Terça',qua:'Quarta',qui:'Quinta',sex:'Sexta',sab:'Sábado',dom:'Domingo' };
+  for (const row of grid.querySelectorAll('.disp-row')) {
     const day = row.dataset.day;
-    const on = row.querySelector('.disp-chk').checked;
-    if (on) {
-      const ini = row.querySelector('.disp-ini').value || '08:00';
-      const fim = row.querySelector('.disp-fim').value || '17:00';
-      disp[day] = `${ini}-${fim}`;
-    }
-  });
+    if (!row.querySelector('.disp-chk').checked) continue;
+    const ini = row.querySelector('.disp-ini').value || '08:00';
+    const fim = row.querySelector('.disp-fim').value || '17:00';
+    const iniMin = _hmToMin(ini), fimMin = _hmToMin(fim);
+    if (iniMin < 8 * 60) return { erro: `${DAY_LABELS[day]}: início não pode ser antes das 08:00.` };
+    if (fimMin > 22 * 60) return { erro: `${DAY_LABELS[day]}: fim não pode ser depois das 22:00.` };
+    if (fimMin <= iniMin) return { erro: `${DAY_LABELS[day]}: horário de fim deve ser após o início.` };
+    disp[day] = `${ini}-${fim}`;
+  }
   return disp;
 }
 
@@ -868,6 +871,7 @@ document.getElementById('mgmt-m-salvar').addEventListener('click', async () => {
   btn.disabled = true;
   try {
     const disponibilidade = _coletarDisp();
+    if (disponibilidade?.erro) { err.textContent = disponibilidade.erro; btn.disabled = false; return; }
     const res = await api(`/api/massagistas/${_editMId}`, { method: 'PUT', body: JSON.stringify({ nome, ativo, disponibilidade }) });
     if (!res) return;
     const d = await res.json();

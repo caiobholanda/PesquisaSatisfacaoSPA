@@ -27,9 +27,30 @@ router.post('/massagistas', (req, res) => {
   res.status(201).json({ ok: true, id });
 });
 
+function _validarDisp(disponibilidade) {
+  if (!disponibilidade) return null;
+  const disp = typeof disponibilidade === 'string' ? JSON.parse(disponibilidade) : disponibilidade;
+  const SPA_INI = 8 * 60, SPA_FIM = 22 * 60;
+  const toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+  for (const [day, faixa] of Object.entries(disp)) {
+    if (!faixa) continue;
+    const parts = faixa.split('-');
+    if (parts.length !== 2) return `Formato inválido para ${day}`;
+    const ini = toMin(parts[0].trim()), fim = toMin(parts[1].trim());
+    if (ini < SPA_INI) return `Horário de ${day} não pode começar antes das 08:00`;
+    if (fim > SPA_FIM) return `Horário de ${day} não pode terminar após as 22:00`;
+    if (fim <= ini) return `Horário de fim de ${day} deve ser após o início`;
+  }
+  return null;
+}
+
 router.put('/massagistas/:id', (req, res) => {
   const { nome, ativo = 1, matricula, especialidade_original, funcao, vinculo, bilingue, disponibilidade } = req.body || {};
   if (!nome?.trim()) return res.status(400).json({ ok: false, error: 'Nome obrigatório' });
+  if (disponibilidade !== undefined) {
+    const erroDisp = _validarDisp(disponibilidade);
+    if (erroDisp) return res.status(400).json({ ok: false, error: erroDisp });
+  }
   const opts = {};
   if (matricula !== undefined) opts.matricula = matricula?.trim() || null;
   if (especialidade_original !== undefined) opts.especialidade_original = especialidade_original?.trim() || null;
