@@ -2957,6 +2957,16 @@
           <option value="">— Selecione —</option>
         </select>
       </div>
+      <div class="res-fg-row">
+        <div class="res-fg">
+          <label>Data <span style="color:var(--danger)">*</span></label>
+          <input type="date" id="res-inp-data">
+        </div>
+        <div class="res-fg">
+          <label>Hora de início <span style="color:var(--danger)">*</span></label>
+          <input type="time" id="res-inp-hora-inicio" min="08:00" max="21:45" step="900">
+        </div>
+      </div>
       <div class="res-fg">
         <label>
           Massoterapeuta <span style="color:var(--danger)">*</span>
@@ -2968,16 +2978,6 @@
         <select id="res-inp-massagista" required>
           <option value="">— Carregando —</option>
         </select>
-      </div>
-      <div class="res-fg-row">
-        <div class="res-fg">
-          <label>Data <span style="color:var(--danger)">*</span></label>
-          <input type="date" id="res-inp-data">
-        </div>
-        <div class="res-fg">
-          <label>Hora de início <span style="color:var(--danger)">*</span></label>
-          <input type="time" id="res-inp-hora-inicio" min="08:00" max="21:45" step="900">
-        </div>
       </div>
       <div class="res-tempo-info" id="res-tempo-info">
         <span class="res-tempo-label">Horário final</span>
