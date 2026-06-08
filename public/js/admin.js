@@ -2018,10 +2018,17 @@ document.getElementById('btn-back-reservas').addEventListener('click',()=>showVi
 
 // Dropdowns SPA e Administrativo
 (function setupDropdowns() {
+  const allMenus = ['spa-dropdown-menu', 'admin-dropdown-menu'];
+  function closeAll() { allMenus.forEach(id => document.getElementById(id).classList.remove('open')); }
   function makeDropdown(toggleId, menuId) {
     const toggle = document.getElementById(toggleId);
     const menu   = document.getElementById(menuId);
-    toggle.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); });
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasOpen = menu.classList.contains('open');
+      closeAll();
+      if (!wasOpen) menu.classList.add('open');
+    });
     menu.addEventListener('click', () => menu.classList.remove('open'));
   }
   makeDropdown('btn-spa-toggle', 'spa-dropdown-menu');
