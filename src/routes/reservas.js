@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { listarReservasSemana, inserirReserva, cancelarReserva, listarTodasReservas, buscarReservaById, criarSurveyToken, gerarDocumentoToken, countSessoesSemPesquisa } from '../db.js';
+import { listarReservasSemana, inserirReserva, cancelarReserva, listarTodasReservas, buscarReservaById, criarSurveyToken, gerarDocumentoToken, countSessoesSemPesquisa, buscarAdminById } from '../db.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -63,7 +63,7 @@ router.post('/', (req, res) => {
         linha: linha?.trim() || null,
         tipo_massagem_id: tipo_massagem_id ? +tipo_massagem_id : null,
         massagista_id: +massagista_id,
-        criado_por: req.user?.username || null,
+        criado_por: (() => { const a = req.user?.sub ? buscarAdminById(req.user.sub) : null; return a?.nome || a?.username || req.user?.username || null; })(),
       }
     );
     res.status(201).json({ ok: true, id });
