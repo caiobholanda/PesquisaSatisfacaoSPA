@@ -63,6 +63,7 @@ router.post('/', (req, res) => {
         linha: linha?.trim() || null,
         tipo_massagem_id: tipo_massagem_id ? +tipo_massagem_id : null,
         massagista_id: +massagista_id,
+        criado_por: req.user?.username || null,
       }
     );
     res.status(201).json({ ok: true, id });

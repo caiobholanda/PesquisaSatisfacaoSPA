@@ -171,6 +171,8 @@ export function initDb() {
   for (const col of ['documento_token TEXT', 'documento_token_expiry TEXT', 'idioma_documento TEXT', 'documento_enviado_em TEXT', 'documento_perfil_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}
   }
+  // Migration: admin que criou a reserva
+  try { db.exec(`ALTER TABLE reservas ADD COLUMN criado_por TEXT`); } catch {}
 
   seedTratamentosGranSpa();
   seedMassoterapeutasGranSpa();
@@ -478,7 +480,7 @@ export function listarTodasReservas({ from, to, sala, busca, limit = 100, offset
 }
 
 export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, opts = {}) {
-  const { linha = null, tipo_massagem_id = null, massagista_id = null } = opts;
+  const { linha = null, tipo_massagem_id = null, massagista_id = null, criado_por = null } = opts;
   const db = getDb();
 
   // Conflito de sala
@@ -510,9 +512,9 @@ export function inserirReserva(sala, cliente, tipo_cliente, apto, email, telefon
   }
 
   return db.prepare(
-    `INSERT INTO reservas (sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
-  ).run(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, linha, tipo_massagem_id, massagista_id).lastInsertRowid;
+    `INSERT INTO reservas (sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, hora_inicio, hora_fim, linha, tipo_massagem_id, massagista_id, criado_por)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+  ).run(sala, cliente, tipo_cliente, apto, email, telefone, tratamento, data, horaInicio, horaFim, linha, tipo_massagem_id, massagista_id, criado_por).lastInsertRowid;
 }
 
 export function cancelarReserva(id) {

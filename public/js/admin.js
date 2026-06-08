@@ -1475,6 +1475,7 @@ function renderCalDia() {
               <div class="cal-res-name">${escHtml(res.cliente)}</div>
               ${res.tratamento?`<div class="cal-res-trat">${escHtml(res.tratamento)}</div>`:''}
               <div class="cal-res-time">${res.hora_inicio} – ${res.hora_fim}</div>
+              ${res.criado_por?`<div class="cal-res-by">por ${escHtml(res.criado_por)}</div>`:''}
               <button class="cal-res-cancel" data-action="cal-cancelar" data-id="${res.id}" title="Cancelar reserva">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
@@ -1845,6 +1846,10 @@ function calVerDetalhes(id) {
       <div class="resdet-registro-item">
         <div class="resdet-registro-label">Criado em</div>
         <div class="resdet-registro-val">${r.criado_em ? fmtDataHoraBR(r.criado_em) : '—'}</div>
+      </div>
+      <div class="resdet-registro-item">
+        <div class="resdet-registro-label">Registrado por</div>
+        <div class="resdet-registro-val">${r.criado_por ? escHtml(r.criado_por) : '—'}</div>
       </div>
       <div class="resdet-registro-item">
         <div class="resdet-registro-label">Sala</div>
