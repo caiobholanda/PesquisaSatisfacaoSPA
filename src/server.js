@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -122,6 +123,23 @@ app.use('/api/auth', authRouter);
 app.use('/api/reservas', reservasRouter);
 app.use('/api/dev', devRouter);
 app.use('/api', cadastrosRouter);
+
+app.get('/sso', (req, res) => {
+  const { sso_token } = req.query;
+  if (!sso_token) return res.redirect('/admin?erro=sem_token');
+  try {
+    const payload = jwt.verify(sso_token, process.env.SSO_SECRET);
+    const token = jwt.sign(
+      { sub: 0, username: payload.email, role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><script>localStorage.setItem('token',${JSON.stringify(token)});window.location.replace('/admin');<\/script></head></html>`);
+  } catch {
+    res.redirect('/admin?erro=sso_invalido');
+  }
+});
 
 // Fallback SPA: admin.html para /admin
 app.get('/admin', (_req, res) => {
