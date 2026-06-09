@@ -156,6 +156,8 @@ export function initDb() {
   ]) {
     try { db.exec(`ALTER TABLE massagistas ADD COLUMN ${col}`); } catch {}
   }
+  // Migration: set default funcao for existing records that have null
+  try { db.exec(`UPDATE massagistas SET funcao = 'Massoterapeuta' WHERE funcao IS NULL OR funcao = ''`); } catch {}
   // Migration: add enriched fields to reservas if absent
   for (const col of ['tipo_cliente TEXT', 'apto TEXT', 'email TEXT', 'telefone TEXT', 'tratamento TEXT', 'linha TEXT', 'tipo_massagem_id INTEGER', 'massagista_id INTEGER']) {
     try { db.exec(`ALTER TABLE reservas ADD COLUMN ${col}`); } catch {}

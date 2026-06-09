@@ -1,3 +1,10 @@
+window.addEventListener('load', () => {
+  ['search-massagistas', 'search-tipos'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+});
+
 const TOKEN_KEY = 'granspa_token';
 const LIMIT = 30;
 let _token = null;
