@@ -1,12 +1,3 @@
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    ['search-massagistas', 'search-tipos'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-  }, 300);
-});
-
 const TOKEN_KEY = 'granspa_token';
 const LIMIT = 30;
 let _token = null;
@@ -60,7 +51,7 @@ async function api(url, opts = {}) {
   }
 }
 
-function logout() { pararPollingStats?.(); clearToken(); sessionStorage.removeItem('_vst'); window.location.href = 'https://hub-granmarquise.fly.dev'; }
+function logout() { pararPollingStats?.(); clearToken(); sessionStorage.clear(); localStorage.removeItem('token'); window.location.href = 'https://hub-granmarquise.fly.dev'; }
 
 function showLogin() { window.location.href = 'https://hub-granmarquise.fly.dev'; }
 function showApp() {
@@ -485,6 +476,14 @@ function showView(id) {
   ['view-main', 'view-massagistas', 'view-escala', 'view-tipos', 'view-historico', 'view-reservas', 'view-historico-clientes', 'view-usuarios'].forEach(v => {
     document.getElementById(v).style.display = v === id ? 'block' : 'none';
   });
+  if (id === 'view-massagistas') {
+    const s = document.getElementById('search-massagistas');
+    if (s) { s.value = ''; renderMassagistas(); }
+  }
+  if (id === 'view-tipos') {
+    const s = document.getElementById('search-tipos');
+    if (s) s.value = '';
+  }
   window.scrollTo(0, 0);
   const cur = JSON.parse(sessionStorage.getItem('_vst') || '{}');
   sessionStorage.setItem('_vst', JSON.stringify({ ...cur, view: id }));
