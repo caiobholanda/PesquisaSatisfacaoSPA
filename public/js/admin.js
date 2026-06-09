@@ -2346,7 +2346,10 @@ async function loadUsuarios() {
   let r, d;
   try {
     r = await api('/api/auth/usuarios');
-    if (!r) return;
+    if (!r) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--danger)">Sessão inválida. Faça logout e login novamente.</td></tr>';
+      return;
+    }
     d = await r.json();
   } catch {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--danger)">Erro ao carregar usuários.</td></tr>';
