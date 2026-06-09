@@ -2370,6 +2370,8 @@ async function loadUsuarios() {
   }
   const fmt = iso => iso ? iso.slice(0,10).split('-').reverse().join('/') : '—';
   const meId = me?.sub;
+  const isMaster = me?.role === 'master';
+  document.getElementById('btn-novo-usuario').style.display = isMaster ? '' : 'none';
   tbody.innerHTML = d.items.map(u => `<tr>
     <td>
       <div style="font-weight:500">${escHtml(u.nome || u.username)}</div>
@@ -2379,8 +2381,7 @@ async function loadUsuarios() {
     <td><span class="role-badge role-${u.role||'admin'}">${ROLE_LABEL[u.role]||u.role||'admin'}</span></td>
     <td style="font-size:.78rem;color:var(--muted)">${fmt(u.created_at)}</td>
     <td style="text-align:right;white-space:nowrap">
-      <button class="btn btn-outline btn-sm" style="margin-right:.4rem" data-action="edit-user" data-id="${u.id}">Editar</button>
-      ${u.id !== meId ? `<button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" data-action="del-user" data-id="${u.id}" data-nome="${escHtml(u.nome||u.username)}">Remover</button>` : '<span style="font-size:.72rem;color:var(--muted)">você</span>'}
+      ${isMaster && u.id !== meId ? `<button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" data-action="del-user" data-id="${u.id}" data-nome="${escHtml(u.nome||u.username)}">Remover</button>` : u.id === meId ? '<span style="font-size:.72rem;color:var(--muted)">você</span>' : ''}
     </td>
   </tr>`).join('');
 }

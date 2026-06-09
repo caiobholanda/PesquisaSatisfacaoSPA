@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { buscarAdmin, buscarAdminById, listarAdmins, inserirAdmin, atualizarAdmin, deletarAdmin } from '../db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireMaster } from '../middleware/auth.js';
 
 const router = Router();
 const ROLES_VALIDOS = ['master', 'admin', 'normal'];
@@ -34,12 +34,12 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/usuarios
-router.get('/usuarios', requireAuth, (req, res) => {
+router.get('/usuarios', requireAuth, requireMaster, (req, res) => {
   res.json({ ok: true, items: listarAdmins() });
 });
 
 // POST /api/auth/usuarios
-router.post('/usuarios', requireAuth, (req, res) => {
+router.post('/usuarios', requireAuth, requireMaster, (req, res) => {
   const { username, nome, role = 'admin' } = req.body || {};
   if (!username?.trim())
     return res.status(400).json({ ok: false, error: 'Usuário obrigatório' });
@@ -54,7 +54,7 @@ router.post('/usuarios', requireAuth, (req, res) => {
 });
 
 // PUT /api/auth/usuarios/:id
-router.put('/usuarios/:id', requireAuth, (req, res) => {
+router.put('/usuarios/:id', requireAuth, requireMaster, (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ ok: false, error: 'ID inválido' });
   const existing = buscarAdminById(id);
@@ -73,7 +73,7 @@ router.put('/usuarios/:id', requireAuth, (req, res) => {
 });
 
 // DELETE /api/auth/usuarios/:id
-router.delete('/usuarios/:id', requireAuth, (req, res) => {
+router.delete('/usuarios/:id', requireAuth, requireMaster, (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ ok: false, error: 'ID inválido' });
   const meId = req.user?.sub;

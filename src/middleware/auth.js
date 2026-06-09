@@ -11,3 +11,8 @@ export function requireAuth(req, res, next) {
     return res.status(401).json({ ok: false, error: 'Token inválido ou expirado' });
   }
 }
+
+export function requireMaster(req, res, next) {
+  if (req.user?.role !== 'master') return res.status(403).json({ ok: false, error: 'Acesso restrito a administradores master' });
+  next();
+}
