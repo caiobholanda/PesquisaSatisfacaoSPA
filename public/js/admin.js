@@ -2311,45 +2311,14 @@ function currentUserPayload() {
 }
 
 const ROLE_LABEL = { master: 'Master', admin: 'Admin', normal: 'Normal' };
-const SENHA_RULES = [
-  { test: s => s.length >= 8,           label: '8+ caracteres' },
-  { test: s => /[A-Z]/.test(s),         label: 'Maiúscula' },
-  { test: s => /[0-9]/.test(s),         label: 'Número' },
-  { test: s => /[^a-zA-Z0-9]/.test(s),  label: 'Caractere especial (!@#…)' },
-];
-
-function atualizarSenhaUI(senha) {
-  const passed = SENHA_RULES.filter(r => r.test(senha)).length;
-  const fill   = document.getElementById('senha-strength-fill');
-  const lbl    = document.getElementById('senha-strength-label');
-  const rules  = document.getElementById('senha-rules');
-  const cores  = ['','#B85450','#D4953D','#5B9BD5','#2D7A4F'];
-  const labels = ['','Fraca','Razoável','Boa','Forte'];
-  fill.style.width = (passed * 25) + '%';
-  fill.style.background = cores[passed] || 'transparent';
-  lbl.textContent = senha ? labels[passed] || '' : '';
-  lbl.style.color = cores[passed] || 'var(--muted)';
-  rules.innerHTML = SENHA_RULES.map(r => {
-    const ok = r.test(senha);
-    return `<span style="font-size:.68rem;color:${ok?'var(--success)':'var(--muted)'}">${ok?'✓':'○'} ${r.label}</span>`;
-  }).join('');
-}
-
-document.getElementById('usuario-senha').addEventListener('input', function() { atualizarSenhaUI(this.value); });
-document.getElementById('btn-toggle-senha').addEventListener('click', () => {
-  const inp = document.getElementById('usuario-senha');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-});
 
 function fecharFormUsuario() {
   document.getElementById('form-usuario').style.display = 'none';
-  ['usuario-nome','usuario-username','usuario-senha','usuario-edit-id'].forEach(id => {
+  ['usuario-nome','usuario-username','usuario-edit-id'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('usuario-role').value = 'admin';
   document.getElementById('usuario-msg').style.display = 'none';
-  atualizarSenhaUI('');
-  document.getElementById('senha-label').innerHTML = 'Senha <span style="color:var(--muted);font-weight:400">(obrigatória)</span>';
 }
 
 document.getElementById('btn-novo-usuario').addEventListener('click', () => {
@@ -2425,11 +2394,8 @@ window.editarUsuario = async (id) => {
   document.getElementById('form-usuario-titulo').textContent = 'Editar Usuário';
   document.getElementById('usuario-nome').value = u.nome || '';
   document.getElementById('usuario-username').value = u.username;
-  document.getElementById('usuario-senha').value = '';
   document.getElementById('usuario-role').value = u.role || 'admin';
   document.getElementById('usuario-edit-id').value = id;
-  document.getElementById('senha-label').innerHTML = 'Nova senha <span style="color:var(--muted);font-weight:400">(deixe em branco para não alterar)</span>';
-  atualizarSenhaUI('');
   document.getElementById('usuario-msg').style.display = 'none';
   document.getElementById('form-usuario').style.display = 'block';
   document.getElementById('form-usuario').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2439,18 +2405,13 @@ document.getElementById('btn-salvar-usuario').addEventListener('click', async ()
   const editId  = document.getElementById('usuario-edit-id').value;
   const nome    = document.getElementById('usuario-nome').value.trim();
   const username= document.getElementById('usuario-username').value.trim();
-  const senha   = document.getElementById('usuario-senha').value;
   const role    = document.getElementById('usuario-role').value;
   const msg     = document.getElementById('usuario-msg');
   msg.style.display = 'none';
 
   if (!username) { msg.textContent='Usuário obrigatório.'; msg.style.display='block'; return; }
-  if (!editId) {
-    if (!senha) { msg.textContent='Senha obrigatória para novo usuário.'; msg.style.display='block'; return; }
-    if (SENHA_RULES.some(r => !r.test(senha))) { msg.textContent='A senha não atende todos os requisitos de segurança.'; msg.style.display='block'; return; }
-  }
 
-  const body = JSON.stringify({ nome, username, senha: senha || undefined, role });
+  const body = JSON.stringify({ nome, username, role });
   const isEdit = !!editId;
   const r = await api(
     isEdit ? `/api/auth/usuarios/${editId}` : '/api/auth/usuarios',

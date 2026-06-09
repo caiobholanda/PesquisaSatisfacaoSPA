@@ -40,16 +40,15 @@ router.get('/usuarios', requireAuth, (req, res) => {
 
 // POST /api/auth/usuarios
 router.post('/usuarios', requireAuth, (req, res) => {
-  const { username, senha, nome, role = 'admin' } = req.body || {};
-  if (!username?.trim() || !senha)
-    return res.status(400).json({ ok: false, error: 'Usuário e senha obrigatórios' });
-  if (!senhaForte(senha))
-    return res.status(400).json({ ok: false, error: 'Senha fraca: mín. 8 chars, maiúscula, número e caractere especial' });
+  const { username, nome, role = 'admin' } = req.body || {};
+  if (!username?.trim())
+    return res.status(400).json({ ok: false, error: 'Usuário obrigatório' });
   if (!ROLES_VALIDOS.includes(role))
     return res.status(400).json({ ok: false, error: 'Perfil inválido' });
   if (buscarAdmin(username.trim()))
     return res.status(409).json({ ok: false, error: 'Usuário já existe' });
-  const hash = bcrypt.hashSync(senha, 10);
+  const defaultPass = process.env.ADMIN_PASS || 'TrocarEmProducao!';
+  const hash = bcrypt.hashSync(defaultPass, 10);
   const id = inserirAdmin(username.trim(), hash, nome?.trim() || null, role);
   res.status(201).json({ ok: true, id });
 });
@@ -61,23 +60,15 @@ router.put('/usuarios/:id', requireAuth, (req, res) => {
   const existing = buscarAdminById(id);
   if (!existing) return res.status(404).json({ ok: false, error: 'Não encontrado' });
 
-  const { username, senha, nome, role = existing.role || 'admin' } = req.body || {};
+  const { username, nome, role = existing.role || 'admin' } = req.body || {};
   if (!username?.trim()) return res.status(400).json({ ok: false, error: 'Usuário obrigatório' });
   if (!ROLES_VALIDOS.includes(role)) return res.status(400).json({ ok: false, error: 'Perfil inválido' });
 
-  // Verifica unicidade do username (excluindo o próprio)
   const outro = buscarAdmin(username.trim());
   if (outro && outro.id !== id)
     return res.status(409).json({ ok: false, error: 'Nome de usuário já está em uso' });
 
-  let passwordHash = null;
-  if (senha) {
-    if (!senhaForte(senha))
-      return res.status(400).json({ ok: false, error: 'Senha fraca: mín. 8 chars, maiúscula, número e caractere especial' });
-    passwordHash = bcrypt.hashSync(senha, 10);
-  }
-
-  atualizarAdmin(id, { nome: nome?.trim() || null, username: username.trim(), passwordHash, role });
+  atualizarAdmin(id, { nome: nome?.trim() || null, username: username.trim(), passwordHash: null, role });
   res.json({ ok: true });
 });
 
