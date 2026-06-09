@@ -125,7 +125,7 @@ app.use('/api/dev', devRouter);
 app.use('/api', cadastrosRouter);
 
 app.get('/sso', (req, res) => {
-  const { sso_token } = req.query;
+  const { sso_token, next } = req.query;
   if (!sso_token) return res.redirect('/admin?erro=sem_token');
   try {
     const payload = jwt.verify(sso_token, process.env.SSO_SECRET);
@@ -134,8 +134,9 @@ app.get('/sso', (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
+    const dest = next && /^\/[a-zA-Z0-9\-_/.~]*$/.test(next) ? next : '/admin';
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><script>sessionStorage.setItem('granspa_token',${JSON.stringify(token)});window.location.replace('/admin');<\/script></head></html>`);
+    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><script>sessionStorage.setItem('granspa_token',${JSON.stringify(token)});window.location.replace(${JSON.stringify(dest)});<\/script></head></html>`);
   } catch {
     res.redirect('/admin?erro=sso_invalido');
   }
