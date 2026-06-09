@@ -724,6 +724,7 @@ function renderMassagistas() {
       ? `<span class="mgmt-item-stat">${tot} ${tot !== 1 ? 'avaliações' : 'avaliação'}${pctRec != null ? ` · ${pctRec}% recomendam` : ''}</span>`
       : `<span class="mgmt-item-stat sem-aval">Sem avaliações</span>`;
     const badges = [];
+    if (m.funcao) badges.push(`<span class="mgmt-badge mgmt-badge-funcao">${escHtml(m.funcao)}</span>`);
     if (m.matricula) badges.push(`<span class="mgmt-badge mgmt-badge-mat">Mat. ${escHtml(m.matricula)}</span>`);
     if (m.vinculo) badges.push(`<span class="mgmt-badge mgmt-badge-vinculo">${escHtml(m.vinculo)}</span>`);
     if (m.bilingue) badges.push(`<span class="mgmt-badge mgmt-badge-bilingue">Bilíngue</span>`);
