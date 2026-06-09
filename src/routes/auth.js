@@ -34,7 +34,7 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/usuarios
-router.get('/usuarios', requireAuth, requireMaster, (req, res) => {
+router.get('/usuarios', requireAuth, (req, res) => {
   res.json({ ok: true, items: listarAdmins() });
 });
 

@@ -44,6 +44,7 @@ async function api(url, opts = {}) {
       ...opts,
     });
     if (res.status === 401) { logout(); return null; }
+    if (res.status === 403) { showToast('Acesso restrito a administradores master.', 4000); return null; }
     return res;
   } catch (e) {
     if (e.name === 'AbortError') return null;
