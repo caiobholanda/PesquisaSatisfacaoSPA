@@ -845,6 +845,7 @@ window.openEditMassagista = (id, nome, ativo) => {
   document.getElementById('mgmt-m-ativo-txt').textContent = ativo ? 'Ativa' : 'Inativa';
   document.getElementById('mgmt-m-err').textContent = '';
   const m = _massagistas.find(x => x.id === id);
+  document.getElementById('mgmt-m-cargo').value = m?.funcao || '';
   const disp = m?.disponibilidade ? (typeof m.disponibilidade === 'string' ? JSON.parse(m.disponibilidade) : m.disponibilidade) : null;
   _renderDispGrid(disp);
   _modalOpen = true;
@@ -863,13 +864,14 @@ document.getElementById('mgmt-m-salvar').addEventListener('click', async () => {
   err.textContent = '';
   const nome = document.getElementById('mgmt-m-nome').value.trim();
   if (!nome) { err.textContent = 'Informe o nome.'; return; }
+  const funcao = document.getElementById('mgmt-m-cargo').value.trim() || null;
   const ativo = document.getElementById('mgmt-m-ativo').checked ? 1 : 0;
   const btn = document.getElementById('mgmt-m-salvar');
   btn.disabled = true;
   try {
     const disponibilidade = _coletarDisp();
     if (disponibilidade?.erro) { err.textContent = disponibilidade.erro; btn.disabled = false; return; }
-    const res = await api(`/api/massagistas/${_editMId}`, { method: 'PUT', body: JSON.stringify({ nome, ativo, disponibilidade }) });
+    const res = await api(`/api/massagistas/${_editMId}`, { method: 'PUT', body: JSON.stringify({ nome, ativo, funcao, disponibilidade }) });
     if (!res) return;
     const d = await res.json();
     if (!d.ok) { err.textContent = d.error || 'Erro ao salvar.'; return; }

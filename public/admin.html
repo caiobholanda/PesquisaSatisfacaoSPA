@@ -2958,9 +2958,15 @@
       <button class="res-modal-x" id="mgmt-m-x">✕</button>
     </div>
     <div class="res-modal-body">
-      <div class="res-fg">
-        <label>Nome <span style="color:var(--danger)">*</span></label>
-        <input type="text" id="mgmt-m-nome">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="res-fg" style="margin:0">
+          <label>Nome <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="mgmt-m-nome">
+        </div>
+        <div class="res-fg" style="margin:0">
+          <label>Cargo</label>
+          <input type="text" id="mgmt-m-cargo" placeholder="Ex: Massoterapeuta">
+        </div>
       </div>
       <div class="mgmt-toggle-row">
         <span class="mgmt-toggle-row-label">Status</span>
@@ -3039,6 +3045,6 @@
   <div id="drawer-content"></div>
 </div>
 
-<script src="/js/admin.js?v=13"></script>
+<script src="/js/admin.js?v=14"></script>
 </body>
 </html>
