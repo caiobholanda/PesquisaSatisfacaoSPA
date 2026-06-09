@@ -135,7 +135,7 @@ app.get('/sso', (req, res) => {
       { expiresIn: '8h' }
     );
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><script>localStorage.setItem('token',${JSON.stringify(token)});window.location.replace('/admin');<\/script></head></html>`);
+    res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><script>sessionStorage.setItem('granspa_token',${JSON.stringify(token)});window.location.replace('/admin');<\/script></head></html>`);
   } catch {
     res.redirect('/admin?erro=sso_invalido');
   }
