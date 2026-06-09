@@ -197,7 +197,7 @@ export function initDb() {
     { username: 'qualidade@granmarquise.com.br', nome: 'Qualidade' },
     { username: 'spa@granmarquise.com.br', nome: 'Spa' },
   ];
-  const defaultHash = bcrypt.hashSync('GranSpa@2026', 10);
+  const defaultHash = bcrypt.hashSync('Admin123!', 10);
   for (const u of hubUsers) {
     db.prepare(`INSERT INTO admin_users (username, password_hash, nome, role) VALUES (?, ?, ?, 'master')
       ON CONFLICT(username) DO NOTHING`).run(u.username, defaultHash, u.nome);
