@@ -1356,10 +1356,11 @@
 
     .cal-grid { display: grid; grid-template-columns: 72px 1fr 1fr 1fr; position: relative; }
 
-    /* Current-time line */
+    /* Current-time line — z-index abaixo do cabecalho sticky (10) para nao
+       cobrir as informacoes das salas quando a linha rola ate o topo */
     .cal-now-line {
       position: absolute; left: 0; right: 0; height: 2px;
-      background: var(--gold); z-index: 20; pointer-events: none;
+      background: var(--gold); z-index: 8; pointer-events: none;
     }
     .cal-now-line::after {
       content: ''; position: absolute; right: 0; top: -4px;
