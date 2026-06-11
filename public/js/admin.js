@@ -52,9 +52,9 @@ async function api(url, opts = {}) {
   }
 }
 
-function logout() { pararPollingStats?.(); clearToken(); sessionStorage.clear(); localStorage.removeItem('token'); window.location.href = 'https://hub-granmarquise.fly.dev'; }
+function logout() { pararPollingStats?.(); clearToken(); sessionStorage.clear(); localStorage.removeItem('token'); window.location.href = '/acesso-hub.html?next=' + encodeURIComponent(location.origin + '/admin'); }
 
-function showLogin() { window.location.href = 'https://hub-granmarquise.fly.dev'; }
+function showLogin() { window.location.href = '/acesso-hub.html?next=' + encodeURIComponent(location.origin + '/admin'); }
 function showApp() {
   document.getElementById('app-screen').style.display = 'block';
   loadAll(); // sempre carrega dados do painel principal em background

@@ -168,13 +168,13 @@ app.get('/sso', (req, res) => {
 
 app.get('/admin', (req, res) => {
   const cookie = getCookie(req, 'spa_admin_sess');
-  if (!cookie) return res.redirect('/');
+  if (!cookie) return res.redirect('/acesso-hub.html?next=%2Fadmin');
   try {
     jwt.verify(cookie, process.env.JWT_SECRET);
     res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
   } catch {
     clearAdminCookie(res);
-    res.redirect('/');
+    res.redirect('/acesso-hub.html?next=%2Fadmin');
   }
 });
 
