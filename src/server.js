@@ -186,7 +186,13 @@ app.get('/sso', (req, res) => {
   try {
     const payload = jwt.verify(sso_token, process.env.SSO_SECRET);
     const email = (payload.email || '').trim().toLowerCase();
-    const isAdmin = SPA_ADMIN_EMAILS.includes(email);
+    // Fonte de verdade: sites_admin no JWT do Hub. Fallback para a
+    // allowlist local apenas quando o token vier de uma versao antiga
+    // do Hub sem o campo. Apos validacao em prod, SPA_ADMIN_EMAILS
+    // sera removida (Fase 4).
+    const isAdmin = Array.isArray(payload.sites_admin)
+      ? payload.sites_admin.includes('pesquisa-satisfacao')
+      : SPA_ADMIN_EMAILS.includes(email);
     const role = isAdmin ? 'admin' : 'user';
     const token = jwt.sign(
       { sub: 0, username: email, role },
