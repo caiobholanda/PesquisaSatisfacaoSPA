@@ -40,8 +40,35 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/usuarios
-router.get('/usuarios', requireAuth, (req, res) => {
-  res.json({ ok: true, items: listarAdmins() });
+// Fonte de verdade: Hub (data.site_permissions com papel='admin' para o
+// sistema 'pesquisa-satisfacao'). Retorna apenas admins ATIVOS — quem
+// ja logou no Hub alguma vez. Fallback para a tabela local admin_users
+// se o Hub estiver indisponivel (mantem compat com seed inicial).
+const HUB_URL = process.env.HUB_URL || 'https://hub-granmarquise.fly.dev';
+router.get('/usuarios', requireAuth, async (req, res) => {
+  try {
+    const r = await fetch(`${HUB_URL}/api/hub/site-admins?sistema_id=pesquisa-satisfacao`, {
+      headers: { Authorization: `Bearer ${process.env.SSO_SECRET}` },
+    });
+    if (!r.ok) throw new Error('hub indisponivel');
+    const d = await r.json();
+    if (!d.ok) throw new Error('hub erro');
+    // Filtra: so admins ATIVOS (que ja logaram pelo Hub).
+    const items = (d.items || []).filter(x => x.ativo).map(x => ({
+      // mapeia para o formato esperado pelo front
+      id: x.email,                  // usa email como id (string)
+      username: x.email,
+      nome: x.nome || x.email,
+      role: x.is_master ? 'master' : 'admin',
+      ativo: true,
+      ultimo_login: x.ultimo_login,
+      created_at: x.ultimo_login,   // melhor proxy disponivel
+    }));
+    return res.json({ ok: true, items });
+  } catch {
+    // Fallback: lista local da tabela admin_users (compat).
+    return res.json({ ok: true, items: listarAdmins() });
+  }
 });
 
 // POST /api/auth/usuarios
