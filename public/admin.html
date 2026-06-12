@@ -2248,6 +2248,7 @@
           <button class="dropdown-item" id="btn-open-usuarios">Usuários</button>
         </div>
       </div>
+      <span id="gm-datahora" class="gm-datahora" title="Horário de Fortaleza" style="margin-left:.5rem;font-family:ui-monospace,'JetBrains Mono',Menlo,monospace;font-size:.75rem;letter-spacing:.04em;color:var(--text-secondary,#64748b);font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500">--/--/---- · --:--</span>
       <button class="btn btn-outline btn-sm" id="btn-seed-demo" title="⚠ APAGA todos os dados atuais e gera reservas + pesquisas fictícias" style="border-color:var(--indigo);color:var(--indigo)">⚠ Resetar & Demo</button>
       <button class="btn btn-outline btn-sm" id="btn-sair-hub" title="Sair e voltar ao Hub" style="margin-left:.5rem;display:inline-flex;align-items:center;gap:6px">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair
@@ -2265,6 +2266,19 @@
         // ?logout=1&from=pesquisa permite ao Hub registrar este logout.
         window.location.href = 'https://hub-granmarquise.fly.dev/?logout=1&from=pesquisa';
       });
+    })();
+    // Relogio do header — padrao Gran Marquise: DD/MM/AAAA · HH:MM (Fortaleza).
+    (function () {
+      var el = document.getElementById('gm-datahora');
+      if (!el) return;
+      function tick() {
+        var d = new Date();
+        var data = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Fortaleza', day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+        var hora = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Fortaleza', hour: '2-digit', minute: '2-digit' }).format(d);
+        el.textContent = data + ' · ' + hora;
+      }
+      tick();
+      setInterval(tick, 30 * 1000);
     })();
   </script>
 
