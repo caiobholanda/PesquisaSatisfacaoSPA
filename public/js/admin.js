@@ -2489,7 +2489,10 @@ function fecharFormUsuario() {
   document.getElementById('usuario-msg').style.display = 'none';
 }
 
-document.getElementById('btn-novo-usuario').addEventListener('click', () => {
+// Botao "+ Novo Usuario" removido do HTML — criacao de admin agora e' feita
+// exclusivamente pelo Hub. Optional chaining mantem o restante da
+// inicializacao segura caso o botao volte a existir no futuro.
+document.getElementById('btn-novo-usuario')?.addEventListener('click', () => {
   fecharFormUsuario();
   document.getElementById('form-usuario-titulo').textContent = 'Novo Usuário';
   document.getElementById('form-usuario').style.display = 'block';
@@ -2542,7 +2545,10 @@ async function loadUsuarios() {
   const fmt = iso => iso ? iso.slice(0,10).split('-').reverse().join('/') : '—';
   const meId = me?.sub;
   const isMaster = me?.role === 'master';
-  document.getElementById('btn-novo-usuario').style.display = isMaster ? '' : 'none';
+  // btn-novo-usuario foi removido do HTML; optional chaining evita TypeError
+  // ao renderizar a tela de Usuarios.
+  const btnNovo = document.getElementById('btn-novo-usuario');
+  if (btnNovo) btnNovo.style.display = isMaster ? '' : 'none';
   tbody.innerHTML = d.items.map(u => `<tr>
     <td>
       <div style="font-weight:500">${escHtml(u.nome || u.username)}</div>
