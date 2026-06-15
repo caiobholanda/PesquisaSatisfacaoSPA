@@ -61,8 +61,42 @@ async function api(url, opts = {}) {
 function logout() { pararPollingStats?.(); clearToken(); sessionStorage.clear(); localStorage.removeItem('token'); window.location.href = '/acesso-hub.html?next=' + encodeURIComponent(location.origin + '/admin'); }
 
 function showLogin() { window.location.href = '/acesso-hub.html?next=' + encodeURIComponent(location.origin + '/admin'); }
+// Roles e quais views/escopos cada um ve. admin = read-only de tudo.
+// master ve e edita tudo. spa ve so escopo Spa. satisfacao ve so Relatorios+Historico.
+function rolePermissions(role) {
+  return {
+    podeSpa:        ['master', 'admin', 'spa'].includes(role),
+    podeSatisfacao: ['master', 'admin', 'satisfacao'].includes(role),
+    podeUsuarios:   ['master', 'admin'].includes(role),
+    podeEscrever:   ['master', 'spa', 'satisfacao'].includes(role), // admin = readonly
+  };
+}
+function aplicarRoleNaUI(role) {
+  const p = rolePermissions(role);
+  // Itens do dropdown SPA
+  ['btn-open-massagistas', 'btn-open-escala', 'btn-open-tipos'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = p.podeSpa ? '' : 'none';
+  });
+  // Itens do dropdown Administrativo
+  const btnRelat = document.getElementById('btn-open-relatorios');
+  if (btnRelat) btnRelat.style.display = p.podeSatisfacao ? '' : 'none';
+  const btnHist = document.getElementById('btn-open-historico-clientes');
+  if (btnHist) btnHist.style.display = p.podeSatisfacao ? '' : 'none';
+  const btnUsr = document.getElementById('btn-open-usuarios');
+  if (btnUsr) btnUsr.style.display = p.podeUsuarios ? '' : 'none';
+  // Dropdowns inteiros: esconde se nenhum item dentro esta visivel
+  const spaDrop = document.getElementById('spa-dropdown');
+  if (spaDrop) spaDrop.style.display = p.podeSpa ? '' : 'none';
+  // admin (read-only) nao pode usar seed
+  const btnSeed = document.getElementById('btn-seed-demo');
+  if (btnSeed) btnSeed.style.display = p.podeEscrever ? '' : 'none';
+}
+
 function showApp() {
   document.getElementById('app-screen').style.display = 'block';
+  // Aplica visibilidade conforme o role gravado no JWT atual.
+  try { aplicarRoleNaUI((currentUserPayload() || {}).role); } catch {}
   loadAll(); // sempre carrega dados do painel principal em background
   const st = JSON.parse(sessionStorage.getItem('_vst') || '{}');
   const view = st.view || 'view-reservas';
