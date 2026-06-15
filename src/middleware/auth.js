@@ -28,3 +28,26 @@ export function requireMaster(req, res, next) {
   if (req.user?.role !== 'master') return res.status(403).json({ ok: false, error: 'Acesso restrito a administradores master' });
   next();
 }
+
+// Pode escrever? master = sim. spa/satisfacao = sim dentro do seu escopo.
+// admin = nao (read-only). user = nao.
+// Use este para POST/PUT/DELETE que pertencem ao escopo do Spa OU Satisfacao,
+// junto com requireSpa/requireSatisfacao quando aplicavel.
+export function requireWrite(req, res, next) {
+  if (req.user?.role === 'admin') return res.status(403).json({ ok: false, error: 'Seu perfil é somente leitura' });
+  if (!['master', 'spa', 'satisfacao'].includes(req.user?.role)) return res.status(403).json({ ok: false, error: 'Acesso restrito' });
+  next();
+}
+
+// Acesso ao escopo Spa: master e spa.
+export function requireSpa(req, res, next) {
+  if (!['master', 'spa', 'admin'].includes(req.user?.role)) return res.status(403).json({ ok: false, error: 'Acesso restrito ao Spa' });
+  next();
+}
+
+// Acesso ao escopo Satisfacao (Relatorios/Historico): master e satisfacao.
+// 'admin' tambem pode VER (read-only).
+export function requireSatisfacao(req, res, next) {
+  if (!['master', 'satisfacao', 'admin'].includes(req.user?.role)) return res.status(403).json({ ok: false, error: 'Acesso restrito a relatórios' });
+  next();
+}

@@ -186,14 +186,24 @@ app.get('/sso', (req, res) => {
   try {
     const payload = jwt.verify(sso_token, process.env.SSO_SECRET);
     const email = (payload.email || '').trim().toLowerCase();
-    // Fonte de verdade: sites_admin no JWT do Hub. Fallback para a
-    // allowlist local apenas quando o token vier de uma versao antiga
-    // do Hub sem o campo. Apos validacao em prod, SPA_ADMIN_EMAILS
-    // sera removida (Fase 4).
-    const isAdmin = Array.isArray(payload.sites_admin)
-      ? payload.sites_admin.includes('pesquisa-satisfacao')
-      : SPA_ADMIN_EMAILS.includes(email);
-    const role = isAdmin ? 'admin' : 'user';
+    // Fonte de verdade: site_roles['pesquisa-satisfacao'] no JWT do Hub.
+    // Valores possiveis: master, admin (read-only), spa, satisfacao.
+    // Fallback em cadeia:
+    //   1) site_roles  → role granular do Hub
+    //   2) sites_admin → 'admin' (cookie de admin sem distincao de papel)
+    //   3) allowlist local SPA_ADMIN_EMAILS → 'master' (compat com TI)
+    let role;
+    const siteRole = payload.site_roles && payload.site_roles['pesquisa-satisfacao'];
+    if (siteRole && ['master', 'admin', 'spa', 'satisfacao'].includes(siteRole)) {
+      role = siteRole;
+    } else if (Array.isArray(payload.sites_admin) && payload.sites_admin.includes('pesquisa-satisfacao')) {
+      role = 'admin';
+    } else if (SPA_ADMIN_EMAILS.includes(email)) {
+      role = 'master';
+    } else {
+      role = 'user';
+    }
+    const isAdmin = role !== 'user';
     const token = jwt.sign(
       { sub: 0, username: email, role },
       process.env.JWT_SECRET,
