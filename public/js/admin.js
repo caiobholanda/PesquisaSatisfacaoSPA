@@ -90,6 +90,10 @@ function aplicarRoleNaUI(role) {
   // Dropdowns inteiros: esconde se nenhum item dentro esta visivel
   const spaDrop = document.getElementById('spa-dropdown');
   if (spaDrop) spaDrop.style.display = p.podeSpa ? '' : 'none';
+  // Administrativo: aparece se ve Relatorios/Historico OU Usuarios.
+  // spa puro nao ve nada disso -> dropdown some por inteiro.
+  const adminDrop = document.getElementById('admin-dropdown');
+  if (adminDrop) adminDrop.style.display = (p.podeSatisfacao || p.podeUsuarios) ? '' : 'none';
   // admin (read-only) nao pode usar seed
   const btnSeed = document.getElementById('btn-seed-demo');
   if (btnSeed) btnSeed.style.display = p.podeEscrever ? '' : 'none';
